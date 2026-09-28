@@ -1,10 +1,7 @@
 // Задание 19: закрасить треугольники на изображении.
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextArea;
-import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -141,51 +138,14 @@ public class T19 extends JPanel {
         graphics.drawImage(image, (getWidth() - width) / 2, (getHeight() - height) / 2, width, height, null);
     }
 
-    private static JScrollPane studyNotes(String text) {
-        JTextArea area = new JTextArea(text, 5, 64);
-        area.setEditable(false);
-        area.setFocusable(false);
-        area.setLineWrap(true);
-        area.setWrapStyleWord(true);
-        area.setCaretPosition(0);
-        JScrollPane scroll = new JScrollPane(area);
-        scroll.setFocusable(false);
-        scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        return scroll;
-    }
-
-    private static JPanel studyPanel(String text, String controls) {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.add(studyNotes(text), BorderLayout.CENTER);
-        JTextArea hint = new JTextArea(controls, 2, 64);
-        hint.setEditable(false);
-        hint.setFocusable(false);
-        hint.setLineWrap(true);
-        hint.setWrapStyleWord(true);
-        JScrollPane hintScroll = new JScrollPane(hint);
-        hintScroll.setFocusable(false);
-        hintScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        hintScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        panel.add(hintScroll, BorderLayout.SOUTH);
-        return panel;
-    }
-
     public static void main(String[] args) throws Exception {
         final BufferedImage image = render();
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                JFrame frame = new JFrame("T19 — Заливка треугольников");
+                JFrame frame = new JFrame("T19");
                 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                JPanel content = new JPanel(new BorderLayout());
-                content.add(new T19(image), BorderLayout.CENTER);
-                content.add(studyPanel(
-                    "Что делает: заполняет цветом заданные треугольники на изображении.\n"
-                    + "Какой принцип или формула: для каждой строки собираются левая и правая границы, затем закрашивается ограниченный шириной картинки интервал.\n"
-                    + "Что означают основные параметры: p1–p3 — вершины; y — строка; color — цвет заливки.\n"
-                    + "В каком методе это реализовано: fillTriangle(BufferedImage, Point, Point, Point, int).", "Управление: нет; результат показан сразу."), BorderLayout.SOUTH);
-                frame.setContentPane(content);
+                frame.add(new T19(image), BorderLayout.CENTER);
                 frame.setSize(1000, 760);
                 frame.setLocationRelativeTo(null);
                 frame.setVisible(true);

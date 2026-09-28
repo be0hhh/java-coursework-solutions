@@ -18,8 +18,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 
 public class T15 {
@@ -71,7 +69,7 @@ public class T15 {
     }
 
     private static void show(BufferedImage source, BufferedImage result) {
-        JFrame frame = new JFrame("T15 · Переход между летним и зимним изображениями");
+        JFrame frame = new JFrame("T15");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         BufferedImage[] displayed = { source };
@@ -134,50 +132,11 @@ public class T15 {
             }
         });
 
-        JPanel footer = new JPanel(new BorderLayout());
-        footer.add(state, BorderLayout.NORTH);
-        footer.add(studyPanel(
-            "Что делает: соединяет летнее и зимнее изображения плавным переходом слева направо.\n"
-            + "Какой принцип или формула: цвет = summer·(1−t) + winter·t; t линейно меняется от 0 до 1.\n"
-            + "Что означают основные параметры: summer и winter — исходные картинки; x задаёт долю t.\n"
-            + "В каком методе это реализовано: process(BufferedImage, BufferedImage).", "Управление: Space — исходник/результат; ЛКМ — шаг смешивания; ← — уменьшить долю; R — исходник."), BorderLayout.CENTER);
-        JPanel content = new JPanel(new BorderLayout());
-        content.add(canvas, BorderLayout.CENTER);
-        content.add(footer, BorderLayout.SOUTH);
-        frame.setContentPane(content);
+        frame.add(canvas, BorderLayout.CENTER);
+        frame.add(state, BorderLayout.SOUTH);
         frame.setSize(1000, 700);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
-    }
-
-    private static JScrollPane studyNotes(String text) {
-        JTextArea area = new JTextArea(text, 5, 64);
-        area.setEditable(false);
-        area.setFocusable(false);
-        area.setLineWrap(true);
-        area.setWrapStyleWord(true);
-        area.setCaretPosition(0);
-        JScrollPane scroll = new JScrollPane(area);
-        scroll.setFocusable(false);
-        scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        return scroll;
-    }
-
-    private static JPanel studyPanel(String text, String controls) {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.add(studyNotes(text), BorderLayout.CENTER);
-        JTextArea hint = new JTextArea(controls, 2, 64);
-        hint.setEditable(false);
-        hint.setFocusable(false);
-        hint.setLineWrap(true);
-        hint.setWrapStyleWord(true);
-        JScrollPane hintScroll = new JScrollPane(hint);
-        hintScroll.setFocusable(false);
-        hintScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        hintScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        panel.add(hintScroll, BorderLayout.SOUTH);
-        return panel;
     }
 
     public static void main(String[] args) throws Exception {

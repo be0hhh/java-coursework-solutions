@@ -18,8 +18,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 
 public class T04 {
@@ -61,7 +59,7 @@ public class T04 {
     }
 
     private static void show(BufferedImage source, BufferedImage result) {
-        JFrame frame = new JFrame("T04 · Три цветных оттенка изображения");
+        JFrame frame = new JFrame("T04");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         BufferedImage[] displayed = { source };
@@ -124,50 +122,11 @@ public class T04 {
             }
         });
 
-        JPanel footer = new JPanel(new BorderLayout());
-        footer.add(state, BorderLayout.NORTH);
-        footer.add(studyPanel(
-            "Что делает: окрашивает левую треть изображения в жёлтые, среднюю в красные, правую в зелёные оттенки.\n"
-            + "Какой принцип или формула: интенсивность v = 0.1R + 0.6G + 0.3B; цвета частей — (v, v, 0), (v, 0, 0), (0, v, 0).\n"
-            + "Что означают основные параметры: x задаёт одну из трёх частей; R, G, B — каналы.\n"
-            + "В каком методе это реализовано: process(BufferedImage).", "Управление: Space — исходник/результат; ЛКМ — шаг смешивания; ← — уменьшить долю; R — исходник."), BorderLayout.CENTER);
-        JPanel content = new JPanel(new BorderLayout());
-        content.add(canvas, BorderLayout.CENTER);
-        content.add(footer, BorderLayout.SOUTH);
-        frame.setContentPane(content);
+        frame.add(canvas, BorderLayout.CENTER);
+        frame.add(state, BorderLayout.SOUTH);
         frame.setSize(1000, 700);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
-    }
-
-    private static JScrollPane studyNotes(String text) {
-        JTextArea area = new JTextArea(text, 5, 64);
-        area.setEditable(false);
-        area.setFocusable(false);
-        area.setLineWrap(true);
-        area.setWrapStyleWord(true);
-        area.setCaretPosition(0);
-        JScrollPane scroll = new JScrollPane(area);
-        scroll.setFocusable(false);
-        scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        return scroll;
-    }
-
-    private static JPanel studyPanel(String text, String controls) {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.add(studyNotes(text), BorderLayout.CENTER);
-        JTextArea hint = new JTextArea(controls, 2, 64);
-        hint.setEditable(false);
-        hint.setFocusable(false);
-        hint.setLineWrap(true);
-        hint.setWrapStyleWord(true);
-        JScrollPane hintScroll = new JScrollPane(hint);
-        hintScroll.setFocusable(false);
-        hintScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        hintScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        panel.add(hintScroll, BorderLayout.SOUTH);
-        return panel;
     }
 
     public static void main(String[] args) throws Exception {

@@ -5,8 +5,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.AbstractAction;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JComponent;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
@@ -199,48 +197,13 @@ public class T29 {
     }
 
     private static void showWindow() {
-        JFrame frame = new JFrame("T29 — Векторы и матрицы");
+        JFrame frame = new JFrame("T29");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         ResultPanel panel = new ResultPanel();
         frame.add(new JScrollPane(panel), BorderLayout.CENTER);
-        frame.add(studyPanel(
-            "Что делает: показывает операции над векторами и матрицами 3×3.\n"
-            + "Какой принцип или формула: a·b = a.x*b.x + a.y*b.y + a.z*b.z; матрица поворота задаётся осью и углом.\n"
-            + "Что означают основные параметры: x/y/z — компоненты вектора; a/b/c — строки матрицы; angle — угол поворота.\n"
-            + "В каком методе это реализовано: Vector3, Matrix3x3 и results().", "Управление: ЛКМ или → — следующая операция; ← — предыдущая; R — первая."), BorderLayout.SOUTH);
         frame.setSize(900, 700);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
-    }
-
-    private static JScrollPane studyNotes(String text) {
-        JTextArea area = new JTextArea(text, 5, 64);
-        area.setEditable(false);
-        area.setFocusable(false);
-        area.setLineWrap(true);
-        area.setWrapStyleWord(true);
-        area.setCaretPosition(0);
-        JScrollPane scroll = new JScrollPane(area);
-        scroll.setFocusable(false);
-        scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        return scroll;
-    }
-
-    private static JPanel studyPanel(String text, String controls) {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.add(studyNotes(text), BorderLayout.CENTER);
-        JTextArea hint = new JTextArea(controls, 2, 64);
-        hint.setEditable(false);
-        hint.setFocusable(false);
-        hint.setLineWrap(true);
-        hint.setWrapStyleWord(true);
-        JScrollPane hintScroll = new JScrollPane(hint);
-        hintScroll.setFocusable(false);
-        hintScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        hintScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        panel.add(hintScroll, BorderLayout.SOUTH);
-        return panel;
     }
 
     public static void main(String[] args) {

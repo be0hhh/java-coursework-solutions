@@ -17,10 +17,8 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import javax.swing.AbstractAction;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
-import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 
@@ -173,29 +171,20 @@ public class T36 {
     }
 
     private static void showWindow(double[][] heights) {
-        JFrame frame = new JFrame("T36 — Вертикальный короткий луч");
+        JFrame frame = new JFrame("T36");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         JTextArea output = new JTextArea(2, 64);
         output.setEditable(false);
         output.setFocusable(false);
         output.setLineWrap(true);
         output.setWrapStyleWord(true);
-        JPanel content = new JPanel(new BorderLayout());
         HeightMapPanel map = new HeightMapPanel(heights, createMapImage(heights), output);
         bindKey(map, "left", KeyEvent.VK_LEFT, () -> map.movePoint(-1, 0));
         bindKey(map, "right", KeyEvent.VK_RIGHT, () -> map.movePoint(1, 0));
         bindKey(map, "up", KeyEvent.VK_UP, () -> map.movePoint(0, -1));
         bindKey(map, "down", KeyEvent.VK_DOWN, () -> map.movePoint(0, 1));
-        content.add(map, BorderLayout.CENTER);
-        JPanel footer = new JPanel(new BorderLayout());
-        footer.add(output, BorderLayout.NORTH);
-        footer.add(studyPanel(
-            "Что делает: вычисляет высоту поверхности в выбранной точке карты.\n"
-            + "Какой принцип или формула: выбирается один треугольник ячейки и высота считается как взвешенная сумма высот его трёх вершин.\n"
-            + "Что означают основные параметры: x/y — координаты точки; cellX/cellY — ячейка; z00–z11 — высоты углов.\n"
-            + "В каком методе это реализовано: getZ(double[][], double, double).", "Управление: ЛКМ — выбрать точку; стрелки — переместить маркер."), BorderLayout.CENTER);
-        content.add(footer, BorderLayout.SOUTH);
-        frame.add(content);
+        frame.add(map, BorderLayout.CENTER);
+        frame.add(output, BorderLayout.SOUTH);
         frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
@@ -210,36 +199,6 @@ public class T36 {
             throw new IOException("Expected a number in height map");
         }
         return tokens.nval;
-    }
-
-    private static JScrollPane studyNotes(String text) {
-        JTextArea area = new JTextArea(text, 5, 64);
-        area.setEditable(false);
-        area.setFocusable(false);
-        area.setLineWrap(true);
-        area.setWrapStyleWord(true);
-        area.setCaretPosition(0);
-        JScrollPane scroll = new JScrollPane(area);
-        scroll.setFocusable(false);
-        scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        return scroll;
-    }
-
-    private static JPanel studyPanel(String text, String controls) {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.add(studyNotes(text), BorderLayout.CENTER);
-        JTextArea hint = new JTextArea(controls, 2, 64);
-        hint.setEditable(false);
-        hint.setFocusable(false);
-        hint.setLineWrap(true);
-        hint.setWrapStyleWord(true);
-        JScrollPane hintScroll = new JScrollPane(hint);
-        hintScroll.setFocusable(false);
-        hintScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        hintScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        panel.add(hintScroll, BorderLayout.SOUTH);
-        return panel;
     }
 
     public static void main(String[] args) throws Exception {

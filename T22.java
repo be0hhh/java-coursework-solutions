@@ -1,9 +1,6 @@
 // Задание 22: построить контур носа кривыми Безье.
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -95,51 +92,14 @@ public class T22 extends JPanel {
         graphics.drawImage(image, (getWidth() - width) / 2, (getHeight() - height) / 2, width, height, null);
     }
 
-    private static JScrollPane studyNotes(String text) {
-        JTextArea area = new JTextArea(text, 5, 64);
-        area.setEditable(false);
-        area.setFocusable(false);
-        area.setLineWrap(true);
-        area.setWrapStyleWord(true);
-        area.setCaretPosition(0);
-        JScrollPane scroll = new JScrollPane(area);
-        scroll.setFocusable(false);
-        scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        return scroll;
-    }
-
-    private static JPanel studyPanel(String text, String controls) {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.add(studyNotes(text), BorderLayout.CENTER);
-        JTextArea hint = new JTextArea(controls, 2, 64);
-        hint.setEditable(false);
-        hint.setFocusable(false);
-        hint.setLineWrap(true);
-        hint.setWrapStyleWord(true);
-        JScrollPane hintScroll = new JScrollPane(hint);
-        hintScroll.setFocusable(false);
-        hintScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        hintScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        panel.add(hintScroll, BorderLayout.SOUTH);
-        return panel;
-    }
-
     public static void main(String[] args) throws Exception {
         final BufferedImage image = render(600, 600);
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                JFrame frame = new JFrame("T22 — Нос / капля Безье");
+                JFrame frame = new JFrame("T22");
                 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                JPanel content = new JPanel(new BorderLayout());
-                content.add(new T22(image), BorderLayout.CENTER);
-                content.add(studyPanel(
-                    "Что делает: строит контур носа несколькими кривыми Безье.\n"
-                    + "Какой принцип или формула: каждая кубическая кривая задаётся четырьмя точками и вычисляется при t от 0 до 1.\n"
-                    + "Что означают основные параметры: P0/P3 — концы участка; P1/P2 — управляющие точки; width/height — размер изображения.\n"
-                    + "В каком методе это реализовано: render(int, int) и bezier(BufferedImage, Point, Point, Point, Point).", "Управление: нет; результат показан сразу."), BorderLayout.SOUTH);
-                frame.setContentPane(content);
+                frame.add(new T22(image), BorderLayout.CENTER);
                 frame.setSize(1000, 760);
                 frame.setLocationRelativeTo(null);
                 frame.setVisible(true);

@@ -11,10 +11,6 @@ import java.awt.BorderLayout;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextArea;
-import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 
 public class T30 extends KeyAdapter implements GLEventListener {
@@ -119,48 +115,13 @@ public class T30 extends KeyAdapter implements GLEventListener {
         canvas = new GLCanvas(new GLCapabilities(GLProfile.get(GLProfile.GL2)));
         canvas.addGLEventListener(this);
         canvas.addKeyListener(this);
-        JFrame frame = new JFrame("T30 — Круглый дом");
+        JFrame frame = new JFrame("T30");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.add(canvas, BorderLayout.CENTER);
-        frame.add(studyPanel(
-            "Что делает: собирает круглый дом из цилиндра и конуса.\n"
-            + "Какой принцип или формула: glPushMatrix/glPopMatrix изолируют перенос и масштаб каждой детали.\n"
-            + "Что означают основные параметры: координаты — положение детали; scale — размер; angleZ — поворот всего объекта.\n"
-            + "В каком методе это реализовано: display(GLAutoDrawable), drawCylinder(GL2), drawCone(GL2).", "Управление: ←/→ — поворот по Z."), BorderLayout.SOUTH);
         frame.setSize(800, 600);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
         canvas.requestFocusInWindow();
-    }
-
-    private static JScrollPane studyNotes(String text) {
-        JTextArea area = new JTextArea(text, 5, 64);
-        area.setEditable(false);
-        area.setFocusable(false);
-        area.setLineWrap(true);
-        area.setWrapStyleWord(true);
-        area.setCaretPosition(0);
-        JScrollPane scroll = new JScrollPane(area);
-        scroll.setFocusable(false);
-        scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        return scroll;
-    }
-
-    private static JPanel studyPanel(String text, String controls) {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.add(studyNotes(text), BorderLayout.CENTER);
-        JTextArea hint = new JTextArea(controls, 2, 64);
-        hint.setEditable(false);
-        hint.setFocusable(false);
-        hint.setLineWrap(true);
-        hint.setWrapStyleWord(true);
-        JScrollPane hintScroll = new JScrollPane(hint);
-        hintScroll.setFocusable(false);
-        hintScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        hintScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        panel.add(hintScroll, BorderLayout.SOUTH);
-        return panel;
     }
 
     public static void main(String[] args) {
