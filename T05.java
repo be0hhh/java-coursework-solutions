@@ -2,6 +2,7 @@
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -15,6 +16,7 @@ import javax.swing.ActionMap;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
@@ -37,7 +39,7 @@ public class T05 {
         }
         int chartHeight = height / 2;
         for (int x = 0; x < Math.min(256, width); x++) {
-            int barHeight = histogram[x] * chartHeight / maximum;
+            int barHeight = (int) ((long) histogram[x] * chartHeight / maximum);
             for (int y = chartHeight - barHeight; y < chartHeight; y++) {
                 result.setRGB(x, y, 0x00ff00);
             }
@@ -116,7 +118,16 @@ public class T05 {
             }
         });
 
-        frame.setContentPane(canvas);
+        JTextArea explanation = new JTextArea(
+                "Считаем, сколько пикселей имеет каждое значение зелёного канала.\n"
+                + "Положение столбца задаёт значение канала от 0 до 255.\n"
+                + "Высота столбца пропорциональна числу таких пикселей.");
+        explanation.setEditable(false);
+        explanation.setFocusable(false);
+        JPanel content = new JPanel(new BorderLayout());
+        content.add(canvas, BorderLayout.CENTER);
+        content.add(explanation, BorderLayout.SOUTH);
+        frame.setContentPane(content);
         frame.setSize(1000, 700);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);

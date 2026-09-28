@@ -1,7 +1,9 @@
 // Задание 20: построить круг кривыми Безье.
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Point;
@@ -97,7 +99,16 @@ public class T20 extends JPanel {
             public void run() {
                 JFrame frame = new JFrame("T20 — Круг Безье");
                 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                frame.setContentPane(new T20(image));
+                JTextArea explanation = new JTextArea(
+                        "Круг приближён четырьмя кубическими кривыми Безье.\n"
+                        + "У каждого участка четыре управляющие точки; t меняется от 0 до 1.\n"
+                        + "Соседние точки кривой соединяются отрезками по Брезенхему.");
+                explanation.setEditable(false);
+                explanation.setFocusable(false);
+                JPanel content = new JPanel(new BorderLayout());
+                content.add(new T20(image), BorderLayout.CENTER);
+                content.add(explanation, BorderLayout.SOUTH);
+                frame.setContentPane(content);
                 frame.setSize(1000, 760);
                 frame.setLocationRelativeTo(null);
                 frame.setVisible(true);

@@ -66,7 +66,8 @@ public class T36 {
 
         private void updateOutput() {
             output.setText(String.format(java.util.Locale.ROOT,
-                    "x = %.2f, y = %.2f, высота = %.2f", x, y, getZ(heights, x, y)));
+                    "x = %.2f, y = %.2f; высота по трём вершинам треугольника = %.2f",
+                    x, y, getZ(heights, x, y)));
         }
 
         protected void paintComponent(Graphics graphics) {

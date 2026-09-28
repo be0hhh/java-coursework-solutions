@@ -7,6 +7,7 @@ import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.glu.GLU;
+import java.awt.BorderLayout;
 import java.awt.image.BufferedImage;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -15,6 +16,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
+import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 
 public class T35 extends KeyAdapter implements GLEventListener {
@@ -164,7 +166,14 @@ public class T35 extends KeyAdapter implements GLEventListener {
         canvas.addKeyListener(this);
         JFrame frame = new JFrame("T35 — Небесный куб");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.add(canvas);
+        JTextArea explanation = new JTextArea(
+                "В init изображение загружается в текстуру OpenGL.\n"
+                + "При рисовании выбирается готовая текстура.\n"
+                + "Координаты атласа задают участок для каждой грани.");
+        explanation.setEditable(false);
+        explanation.setFocusable(false);
+        frame.add(canvas, BorderLayout.CENTER);
+        frame.add(explanation, BorderLayout.SOUTH);
         frame.setSize(800, 600);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);

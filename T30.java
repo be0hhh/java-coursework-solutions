@@ -7,9 +7,11 @@ import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.glu.GLU;
+import java.awt.BorderLayout;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import javax.swing.JFrame;
+import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 
 public class T30 extends KeyAdapter implements GLEventListener {
@@ -116,7 +118,14 @@ public class T30 extends KeyAdapter implements GLEventListener {
         canvas.addKeyListener(this);
         JFrame frame = new JFrame("T30 — Круглый дом");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.add(canvas);
+        JTextArea explanation = new JTextArea(
+                "Дом собран из цилиндра и конуса.\n"
+                + "glPushMatrix сохраняет преобразование перед каждой деталью.\n"
+                + "glPopMatrix восстанавливает его для следующей детали.");
+        explanation.setEditable(false);
+        explanation.setFocusable(false);
+        frame.add(canvas, BorderLayout.CENTER);
+        frame.add(explanation, BorderLayout.SOUTH);
         frame.setSize(800, 600);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);

@@ -2,7 +2,9 @@
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Point;
@@ -24,12 +26,12 @@ public class T19 extends JPanel {
         int[] right = new int[image.getHeight()];
         Arrays.fill(left, Integer.MAX_VALUE);
         Arrays.fill(right, Integer.MIN_VALUE);
-        collectEdge(p1.x, p1.y, p2.x, p2.y, image.getWidth(), image.getHeight(), left, right);
-        collectEdge(p2.x, p2.y, p3.x, p3.y, image.getWidth(), image.getHeight(), left, right);
-        collectEdge(p3.x, p3.y, p1.x, p1.y, image.getWidth(), image.getHeight(), left, right);
+        collectEdge(p1.x, p1.y, p2.x, p2.y, image.getHeight(), left, right);
+        collectEdge(p2.x, p2.y, p3.x, p3.y, image.getHeight(), left, right);
+        collectEdge(p3.x, p3.y, p1.x, p1.y, image.getHeight(), left, right);
         for (int y = 0; y < image.getHeight(); y++) {
             if (left[y] != Integer.MAX_VALUE) {
-                for (int x = left[y]; x <= right[y]; x++) {
+                for (int x = Math.max(0, left[y]); x <= Math.min(image.getWidth() - 1, right[y]); x++) {
                     image.setRGB(x, y, color);
                 }
             }
@@ -63,7 +65,7 @@ public class T19 extends JPanel {
         return image;
     }
 
-    private static void collectEdge(int x1, int y1, int x2, int y2, int width, int height, int[] left, int[] right) {
+    private static void collectEdge(int x1, int y1, int x2, int y2, int height, int[] left, int[] right) {
         int dx = Math.abs(x2 - x1);
         int dy = Math.abs(y2 - y1);
         if (dx >= dy) {
@@ -79,7 +81,7 @@ public class T19 extends JPanel {
             int y = y1;
             int directionY = sign(y2 - y1);
             for (int x = x1; x <= x2; x++) {
-                collect(x, y, width, height, left, right);
+                collect(x, y, height, left, right);
                 error += dy;
                 if (error + error >= dx) {
                     y += directionY;
@@ -99,7 +101,7 @@ public class T19 extends JPanel {
             int x = x1;
             int directionX = sign(x2 - x1);
             for (int y = y1; y <= y2; y++) {
-                collect(x, y, width, height, left, right);
+                collect(x, y, height, left, right);
                 error += dx;
                 if (error + error >= dy) {
                     x += directionX;
@@ -109,8 +111,8 @@ public class T19 extends JPanel {
         }
     }
 
-    private static void collect(int x, int y, int width, int height, int[] left, int[] right) {
-        if (x >= 0 && x < width && y >= 0 && y < height) {
+    private static void collect(int x, int y, int height, int[] left, int[] right) {
+        if (y >= 0 && y < height) {
             left[y] = Math.min(left[y], x);
             right[y] = Math.max(right[y], x);
         }
@@ -144,7 +146,16 @@ public class T19 extends JPanel {
             public void run() {
                 JFrame frame = new JFrame("T19 — Заливка треугольников");
                 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                frame.setContentPane(new T19(image));
+                JTextArea explanation = new JTextArea(
+                        "Для каждой строки находим левую и правую границы треугольника.\n"
+                        + "Закрашиваем пиксели между границами.\n"
+                        + "Внешние координаты обрезаются по краям изображения.");
+                explanation.setEditable(false);
+                explanation.setFocusable(false);
+                JPanel content = new JPanel(new BorderLayout());
+                content.add(new T19(image), BorderLayout.CENTER);
+                content.add(explanation, BorderLayout.SOUTH);
+                frame.setContentPane(content);
                 frame.setSize(1000, 760);
                 frame.setLocationRelativeTo(null);
                 frame.setVisible(true);
