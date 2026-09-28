@@ -148,7 +148,7 @@ public class T34 extends KeyAdapter implements GLEventListener {
         frame.add(canvas);
         frame.add(studyPanel(
             "Что делает: строит треугольную сетку по карте высот.\n"
-            + "Какой принцип или формула: высота узла из H.txt задаёт координату Z; цвет зависит от высоты.\n"
+            + "Какой принцип или формула: высоты узлов читаются из пикселей map.bmp; worldZ = 0.8 * height - 0.35, цвет зависит от высоты.\n"
             + "Что означают основные параметры: x/y — узел карты; height — значение высоты; angleX/angleZ — повороты вида.\n"
             + "В каком методе это реализовано: drawTerrain(GL2, boolean), terrainVertex(GL2, int, int, boolean).", "Управление: ↑/↓ — поворот по X; ←/→ — по Z."), BorderLayout.SOUTH);
         frame.setSize(800, 600);
@@ -174,9 +174,16 @@ public class T34 extends KeyAdapter implements GLEventListener {
     private static JPanel studyPanel(String text, String controls) {
         JPanel panel = new JPanel(new BorderLayout());
         panel.add(studyNotes(text), BorderLayout.CENTER);
-        JLabel hint = new JLabel(controls);
+        JTextArea hint = new JTextArea(controls, 2, 64);
+        hint.setEditable(false);
         hint.setFocusable(false);
-        panel.add(hint, BorderLayout.SOUTH);
+        hint.setLineWrap(true);
+        hint.setWrapStyleWord(true);
+        JScrollPane hintScroll = new JScrollPane(hint);
+        hintScroll.setFocusable(false);
+        hintScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        hintScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        panel.add(hintScroll, BorderLayout.SOUTH);
         return panel;
     }
 

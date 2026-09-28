@@ -127,8 +127,8 @@ public class T04 {
         JPanel footer = new JPanel(new BorderLayout());
         footer.add(state, BorderLayout.NORTH);
         footer.add(studyPanel(
-            "Что делает: превращает три вертикальные части изображения в разные оттенки серого.\n"
-            + "Какой принцип или формула: яркость = 0.1R + 0.6G + 0.3B; вес зелёного выше.\n"
+            "Что делает: окрашивает левую треть изображения в жёлтые, среднюю в красные, правую в зелёные оттенки.\n"
+            + "Какой принцип или формула: интенсивность v = 0.1R + 0.6G + 0.3B; цвета частей — (v, v, 0), (v, 0, 0), (0, v, 0).\n"
             + "Что означают основные параметры: x задаёт одну из трёх частей; R, G, B — каналы.\n"
             + "В каком методе это реализовано: process(BufferedImage).", "Управление: Space — исходник/результат; ЛКМ — шаг смешивания; ← — уменьшить долю; R — исходник."), BorderLayout.CENTER);
         JPanel content = new JPanel(new BorderLayout());
@@ -157,9 +157,16 @@ public class T04 {
     private static JPanel studyPanel(String text, String controls) {
         JPanel panel = new JPanel(new BorderLayout());
         panel.add(studyNotes(text), BorderLayout.CENTER);
-        JLabel hint = new JLabel(controls);
+        JTextArea hint = new JTextArea(controls, 2, 64);
+        hint.setEditable(false);
         hint.setFocusable(false);
-        panel.add(hint, BorderLayout.SOUTH);
+        hint.setLineWrap(true);
+        hint.setWrapStyleWord(true);
+        JScrollPane hintScroll = new JScrollPane(hint);
+        hintScroll.setFocusable(false);
+        hintScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        hintScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        panel.add(hintScroll, BorderLayout.SOUTH);
         return panel;
     }
 

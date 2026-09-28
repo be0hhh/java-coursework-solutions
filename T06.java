@@ -153,9 +153,16 @@ public class T06 {
     private static JPanel studyPanel(String text, String controls) {
         JPanel panel = new JPanel(new BorderLayout());
         panel.add(studyNotes(text), BorderLayout.CENTER);
-        JLabel hint = new JLabel(controls);
+        JTextArea hint = new JTextArea(controls, 2, 64);
+        hint.setEditable(false);
         hint.setFocusable(false);
-        panel.add(hint, BorderLayout.SOUTH);
+        hint.setLineWrap(true);
+        hint.setWrapStyleWord(true);
+        JScrollPane hintScroll = new JScrollPane(hint);
+        hintScroll.setFocusable(false);
+        hintScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        hintScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        panel.add(hintScroll, BorderLayout.SOUTH);
         return panel;
     }
 
