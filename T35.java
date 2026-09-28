@@ -16,7 +16,10 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JTextArea;
+import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 
 public class T35 extends KeyAdapter implements GLEventListener {
@@ -166,18 +169,39 @@ public class T35 extends KeyAdapter implements GLEventListener {
         canvas.addKeyListener(this);
         JFrame frame = new JFrame("T35 — Небесный куб");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        JTextArea explanation = new JTextArea(
-                "В init изображение загружается в текстуру OpenGL.\n"
-                + "При рисовании выбирается готовая текстура.\n"
-                + "Координаты атласа задают участок для каждой грани.");
-        explanation.setEditable(false);
-        explanation.setFocusable(false);
         frame.add(canvas, BorderLayout.CENTER);
-        frame.add(explanation, BorderLayout.SOUTH);
+        frame.add(studyPanel(
+            "Что делает: рисует куб с участками текстурного атласа на гранях.\n"
+            + "Какой принцип или формула: текстурные координаты выбирают прямоугольник атласа для каждой грани.\n"
+            + "Что означают основные параметры: column/row — ячейка атласа; yaw/pitch — углы поворота куба.\n"
+            + "В каком методе это реализовано: createTexture(GL2, BufferedImage), drawSkyBox(GL2, double), texturedQuad(...).", "Управление: ←/→ — поворот по горизонтали; ↑/↓ — по вертикали."), BorderLayout.SOUTH);
         frame.setSize(800, 600);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
         canvas.requestFocusInWindow();
+    }
+
+    private static JScrollPane studyNotes(String text) {
+        JTextArea area = new JTextArea(text, 5, 64);
+        area.setEditable(false);
+        area.setFocusable(false);
+        area.setLineWrap(true);
+        area.setWrapStyleWord(true);
+        area.setCaretPosition(0);
+        JScrollPane scroll = new JScrollPane(area);
+        scroll.setFocusable(false);
+        scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        return scroll;
+    }
+
+    private static JPanel studyPanel(String text, String controls) {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.add(studyNotes(text), BorderLayout.CENTER);
+        JLabel hint = new JLabel(controls);
+        hint.setFocusable(false);
+        panel.add(hint, BorderLayout.SOUTH);
+        return panel;
     }
 
     public static void main(String[] args) {

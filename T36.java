@@ -20,6 +20,8 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 
 public class T36 {
@@ -27,7 +29,7 @@ public class T36 {
         private static final long serialVersionUID = 1L;
         private final double[][] heights;
         private final BufferedImage image;
-        private final JLabel output;
+        private final JTextArea output;
         private double x;
         private double y;
         private int imageLeft;
@@ -35,7 +37,7 @@ public class T36 {
         private int imageWidth;
         private int imageHeight;
 
-        HeightMapPanel(double[][] heights, BufferedImage image, JLabel output) {
+        HeightMapPanel(double[][] heights, BufferedImage image, JTextArea output) {
             this.heights = heights;
             this.image = image;
             this.output = output;
@@ -173,7 +175,11 @@ public class T36 {
     private static void showWindow(double[][] heights) {
         JFrame frame = new JFrame("T36 — Вертикальный короткий луч");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        JLabel output = new JLabel();
+        JTextArea output = new JTextArea(2, 64);
+        output.setEditable(false);
+        output.setFocusable(false);
+        output.setLineWrap(true);
+        output.setWrapStyleWord(true);
         JPanel content = new JPanel(new BorderLayout());
         HeightMapPanel map = new HeightMapPanel(heights, createMapImage(heights), output);
         bindKey(map, "left", KeyEvent.VK_LEFT, () -> map.movePoint(-1, 0));
@@ -181,7 +187,14 @@ public class T36 {
         bindKey(map, "up", KeyEvent.VK_UP, () -> map.movePoint(0, -1));
         bindKey(map, "down", KeyEvent.VK_DOWN, () -> map.movePoint(0, 1));
         content.add(map, BorderLayout.CENTER);
-        content.add(output, BorderLayout.SOUTH);
+        JPanel footer = new JPanel(new BorderLayout());
+        footer.add(output, BorderLayout.NORTH);
+        footer.add(studyPanel(
+            "Что делает: вычисляет высоту поверхности в выбранной точке карты.\n"
+            + "Какой принцип или формула: выбирается один треугольник ячейки и высота считается как взвешенная сумма высот его трёх вершин.\n"
+            + "Что означают основные параметры: x/y — координаты точки; cellX/cellY — ячейка; z00–z11 — высоты углов.\n"
+            + "В каком методе это реализовано: getZ(double[][], double, double).", "Управление: ЛКМ — выбрать точку; стрелки — переместить маркер."), BorderLayout.CENTER);
+        content.add(footer, BorderLayout.SOUTH);
         frame.add(content);
         frame.pack();
         frame.setLocationRelativeTo(null);
@@ -197,6 +210,29 @@ public class T36 {
             throw new IOException("Expected a number in height map");
         }
         return tokens.nval;
+    }
+
+    private static JScrollPane studyNotes(String text) {
+        JTextArea area = new JTextArea(text, 5, 64);
+        area.setEditable(false);
+        area.setFocusable(false);
+        area.setLineWrap(true);
+        area.setWrapStyleWord(true);
+        area.setCaretPosition(0);
+        JScrollPane scroll = new JScrollPane(area);
+        scroll.setFocusable(false);
+        scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        return scroll;
+    }
+
+    private static JPanel studyPanel(String text, String controls) {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.add(studyNotes(text), BorderLayout.CENTER);
+        JLabel hint = new JLabel(controls);
+        hint.setFocusable(false);
+        panel.add(hint, BorderLayout.SOUTH);
+        return panel;
     }
 
     public static void main(String[] args) throws Exception {

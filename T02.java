@@ -15,9 +15,11 @@ import javax.swing.InputMap;
 import javax.swing.ActionMap;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
+import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 
 public class T02 {
@@ -74,8 +76,11 @@ public class T02 {
             }
         };
         int[] step = { 0 };
+        JLabel state = new JLabel();
         IntConsumer setStep = value -> {
             step[0] = Math.max(0, Math.min(10, value));
+            state.setText(step[0] == 0 ? "Исходник" : step[0] == 10 ? "Результат"
+                    : "Смешивание: " + (step[0] * 10) + "% результата");
             displayed[0] = step[0] == 0 ? source
                     : step[0] == 10 ? result : blend(source, result, step[0]);
             canvas.repaint();
@@ -93,6 +98,7 @@ public class T02 {
         ActionMap actions = canvas.getActionMap();
         keys.put(KeyStroke.getKeyStroke("LEFT"), "previous");
         keys.put(KeyStroke.getKeyStroke("R"), "reset");
+        keys.put(KeyStroke.getKeyStroke("SPACE"), "toggle");
         actions.put("previous", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent event) {
@@ -105,20 +111,50 @@ public class T02 {
                 setStep.accept(0);
             }
         });
+        actions.put("toggle", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                setStep.accept(step[0] == 10 ? 0 : 10);
+            }
+        });
 
-        JTextArea explanation = new JTextArea(
-                "Действие: уменьшаем каждый канал RGB на 10%.\n"
-                + "Формула: новый канал = (int) (старый канал × 0.9).\n"
-                + "Пример: (200, 100, 50) → (180, 90, 45).");
-        explanation.setEditable(false);
-        explanation.setFocusable(false);
+        JPanel footer = new JPanel(new BorderLayout());
+        footer.add(state, BorderLayout.NORTH);
+        footer.add(studyPanel(
+            "Что делает: уменьшает яркость каждого пикселя.\n"
+            + "Какой принцип или формула: каждый канал RGB умножается на 0.9.\n"
+            + "Что означают основные параметры: source — исходная картинка; R, G, B — каналы цвета.\n"
+            + "В каком методе это реализовано: process(BufferedImage).", "Управление: Space — исходник/результат; ЛКМ — шаг смешивания; ← — уменьшить долю; R — исходник."), BorderLayout.CENTER);
         JPanel content = new JPanel(new BorderLayout());
         content.add(canvas, BorderLayout.CENTER);
-        content.add(explanation, BorderLayout.SOUTH);
+        content.add(footer, BorderLayout.SOUTH);
         frame.setContentPane(content);
         frame.setSize(1000, 700);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
+    }
+
+    private static JScrollPane studyNotes(String text) {
+        JTextArea area = new JTextArea(text, 5, 64);
+        area.setEditable(false);
+        area.setFocusable(false);
+        area.setLineWrap(true);
+        area.setWrapStyleWord(true);
+        area.setCaretPosition(0);
+        JScrollPane scroll = new JScrollPane(area);
+        scroll.setFocusable(false);
+        scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        return scroll;
+    }
+
+    private static JPanel studyPanel(String text, String controls) {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.add(studyNotes(text), BorderLayout.CENTER);
+        JLabel hint = new JLabel(controls);
+        hint.setFocusable(false);
+        panel.add(hint, BorderLayout.SOUTH);
+        return panel;
     }
 
     public static void main(String[] args) throws Exception {

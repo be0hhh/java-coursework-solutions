@@ -7,9 +7,14 @@ import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.glu.GLU;
+import java.awt.BorderLayout;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 
 public class T32 extends KeyAdapter implements GLEventListener {
@@ -189,10 +194,38 @@ public class T32 extends KeyAdapter implements GLEventListener {
         JFrame frame = new JFrame("T32 — Снеговик");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.add(canvas);
+        frame.add(studyPanel(
+            "Что делает: строит снеговика из сфер, цилиндра, конуса и дуг тора.\n"
+            + "Какой принцип или формула: отдельные детали рисуются после переноса и масштабирования матрицы.\n"
+            + "Что означают основные параметры: координаты и радиусы задают детали; angleZ — поворот модели.\n"
+            + "В каком методе это реализовано: display(GLAutoDrawable), drawScaledSphere(GL2, ...), drawTorusArc(GL2, ...).", "Управление: ←/→ — поворот по Z."), BorderLayout.SOUTH);
         frame.setSize(800, 600);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
         canvas.requestFocusInWindow();
+    }
+
+    private static JScrollPane studyNotes(String text) {
+        JTextArea area = new JTextArea(text, 5, 64);
+        area.setEditable(false);
+        area.setFocusable(false);
+        area.setLineWrap(true);
+        area.setWrapStyleWord(true);
+        area.setCaretPosition(0);
+        JScrollPane scroll = new JScrollPane(area);
+        scroll.setFocusable(false);
+        scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        return scroll;
+    }
+
+    private static JPanel studyPanel(String text, String controls) {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.add(studyNotes(text), BorderLayout.CENTER);
+        JLabel hint = new JLabel(controls);
+        hint.setFocusable(false);
+        panel.add(hint, BorderLayout.SOUTH);
+        return panel;
     }
 
     public static void main(String[] args) {
