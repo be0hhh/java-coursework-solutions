@@ -1,3 +1,11 @@
+// Задание 33. Свободная камера.
+import java.awt.BorderLayout;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+
+import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
+
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
@@ -6,11 +14,6 @@ import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.glu.GLU;
-import java.awt.BorderLayout;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
 
 public class T33 extends KeyAdapter implements GLEventListener {
     private final GLU glu = new GLU();
@@ -18,25 +21,6 @@ public class T33 extends KeyAdapter implements GLEventListener {
     private double[] cameraPosition = new double[] {0.0, -3.0, 1.0};
     private double[] cameraDirection = normalize(new double[] {0.0, 1.0, -0.12});
     private double[] cameraUp = normalize(new double[] {0.0, 0.12, 1.0});
-
-    public void init(GLAutoDrawable drawable) {
-        GL2 gl = drawable.getGL().getGL2();
-        gl.glEnable(GL.GL_DEPTH_TEST);
-        gl.glClearColor(0.07f, 0.09f, 0.13f, 1.0f);
-    }
-
-    public void display(GLAutoDrawable drawable) {
-        GL2 gl = drawable.getGL().getGL2();
-        gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
-        gl.glMatrixMode(GL2.GL_MODELVIEW);
-        gl.glLoadIdentity();
-        glu.gluLookAt(cameraPosition[0], cameraPosition[1], cameraPosition[2],
-                cameraPosition[0] + cameraDirection[0],
-                cameraPosition[1] + cameraDirection[1],
-                cameraPosition[2] + cameraDirection[2],
-                cameraUp[0], cameraUp[1], cameraUp[2]);
-        drawScene(gl);
-    }
 
     private void drawScene(GL2 gl) {
         gl.glColor3d(0.16, 0.2, 0.22);
@@ -102,6 +86,83 @@ public class T33 extends KeyAdapter implements GLEventListener {
         gl.glEnd();
     }
 
+    private void move(double distance) {
+        cameraPosition[0] += cameraDirection[0] * distance;
+        cameraPosition[1] += cameraDirection[1] * distance;
+        cameraPosition[2] += cameraDirection[2] * distance;
+    }
+
+    // Наклоняем направление и верх камеры вместе, сохраняя их взаимную перпендикулярность.
+    private void pitch(double degrees) {
+        double[] axis = normalize(cross(cameraDirection, cameraUp));
+        cameraDirection = normalize(rotate(cameraDirection, axis, degrees));
+        cameraUp = normalize(rotate(cameraUp, axis, degrees));
+    }
+
+    private void resetCamera() {
+        cameraPosition = new double[] {0.0, -3.0, 1.0};
+        cameraDirection = normalize(new double[] {0.0, 1.0, -0.12});
+        cameraUp = normalize(new double[] {0.0, 0.12, 1.0});
+    }
+
+    static double[] normalize(double[] vector) {
+        double length = Math.sqrt(vector[0] * vector[0]
+                + vector[1] * vector[1] + vector[2] * vector[2]);
+        if (length == 0.0 || !Double.isFinite(length)) {
+            throw new IllegalArgumentException("Vector must have a finite non-zero length");
+        }
+        return new double[] {vector[0] / length, vector[1] / length, vector[2] / length};
+    }
+
+    static double[] cross(double[] first, double[] second) {
+        return new double[] {
+            first[1] * second[2] - first[2] * second[1],
+            first[2] * second[0] - first[0] * second[2],
+            first[0] * second[1] - first[1] * second[0]
+        };
+    }
+
+    // Формула Родрига поворачивает вектор вокруг оси; входной угол задан в градусах.
+    static double[] rotate(double[] vector, double[] axis, double degrees) {
+        double[] unitAxis = normalize(axis);
+        double radians = Math.toRadians(degrees);
+        double cosine = Math.cos(radians);
+        double sine = Math.sin(radians);
+        double axisProjection = vector[0] * unitAxis[0]
+                + vector[1] * unitAxis[1] + vector[2] * unitAxis[2];
+        double[] perpendicular = cross(unitAxis, vector);
+        double[] rotatedVector = new double[3];
+        for (int coordinate = 0; coordinate < 3; coordinate++) {
+            double vectorPart = vector[coordinate] * cosine;
+            double perpendicularPart = perpendicular[coordinate] * sine;
+            double axisPart = unitAxis[coordinate] * axisProjection * (1.0 - cosine);
+            rotatedVector[coordinate] = vectorPart + perpendicularPart + axisPart;
+        }
+        return rotatedVector;
+    }
+
+    // Настраиваем фон и буфер глубины один раз при создании OpenGL-контекста.
+    public void init(GLAutoDrawable drawable) {
+        GL2 gl = drawable.getGL().getGL2();
+        gl.glEnable(GL.GL_DEPTH_TEST);
+        gl.glClearColor(0.07f, 0.09f, 0.13f, 1.0f);
+    }
+
+    // Каждый кадр: очищаем буферы, задаём камеру, применяем повороты и рисуем.
+    public void display(GLAutoDrawable drawable) {
+        GL2 gl = drawable.getGL().getGL2();
+        gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
+        gl.glMatrixMode(GL2.GL_MODELVIEW);
+        gl.glLoadIdentity();
+        glu.gluLookAt(cameraPosition[0], cameraPosition[1], cameraPosition[2],
+                cameraPosition[0] + cameraDirection[0],
+                cameraPosition[1] + cameraDirection[1],
+                cameraPosition[2] + cameraDirection[2],
+                cameraUp[0], cameraUp[1], cameraUp[2]);
+        drawScene(gl);
+    }
+
+    // При изменении размера окна обновляем область вывода и перспективу.
     public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
         GL2 gl = drawable.getGL().getGL2();
         gl.glViewport(0, 0, width, height);
@@ -113,6 +174,7 @@ public class T33 extends KeyAdapter implements GLEventListener {
     public void dispose(GLAutoDrawable drawable) {
     }
 
+    // Клавиши изменяют состояние сцены; repaint запрашивает новый кадр.
     public void keyPressed(KeyEvent event) {
         int key = event.getKeyCode();
         if (key == KeyEvent.VK_W) {
@@ -143,63 +205,6 @@ public class T33 extends KeyAdapter implements GLEventListener {
             resetCamera();
         }
         canvas.repaint();
-    }
-
-    private void move(double distance) {
-        cameraPosition[0] += cameraDirection[0] * distance;
-        cameraPosition[1] += cameraDirection[1] * distance;
-        cameraPosition[2] += cameraDirection[2] * distance;
-    }
-
-    private void pitch(double degrees) {
-        double[] axis = normalize(cross(cameraDirection, cameraUp));
-        cameraDirection = normalize(rotate(cameraDirection, axis, degrees));
-        cameraUp = normalize(rotate(cameraUp, axis, degrees));
-    }
-
-    private void resetCamera() {
-        cameraPosition = new double[] {0.0, -3.0, 1.0};
-        cameraDirection = normalize(new double[] {0.0, 1.0, -0.12});
-        cameraUp = normalize(new double[] {0.0, 0.12, 1.0});
-    }
-
-    static double[] normalize(double[] vector) {
-        double squaredX = vector[0] * vector[0];
-        double squaredY = vector[1] * vector[1];
-        double squaredZ = vector[2] * vector[2];
-        double length = Math.sqrt(squaredX + squaredY + squaredZ);
-        if (length == 0.0 || !Double.isFinite(length)) {
-            throw new IllegalArgumentException("Vector must have a finite non-zero length");
-        }
-        return new double[] {vector[0] / length, vector[1] / length, vector[2] / length};
-    }
-
-    static double[] cross(double[] first, double[] second) {
-        return new double[] {
-            first[1] * second[2] - first[2] * second[1],
-            first[2] * second[0] - first[0] * second[2],
-            first[0] * second[1] - first[1] * second[0]
-        };
-    }
-
-    static double[] rotate(double[] vector, double[] axis, double degrees) {
-        double[] unitAxis = normalize(axis);
-        double radians = Math.toRadians(degrees);
-        double cosine = Math.cos(radians);
-        double sine = Math.sin(radians);
-        double projectionX = vector[0] * unitAxis[0];
-        double projectionY = vector[1] * unitAxis[1];
-        double projectionZ = vector[2] * unitAxis[2];
-        double axisProjection = projectionX + projectionY + projectionZ;
-        double[] perpendicular = cross(unitAxis, vector);
-        double[] rotatedVector = new double[3];
-        for (int coordinate = 0; coordinate < 3; coordinate++) {
-            double vectorPart = vector[coordinate] * cosine;
-            double perpendicularPart = perpendicular[coordinate] * sine;
-            double axisPart = unitAxis[coordinate] * axisProjection * (1.0 - cosine);
-            rotatedVector[coordinate] = vectorPart + perpendicularPart + axisPart;
-        }
-        return rotatedVector;
     }
 
     private void start() {

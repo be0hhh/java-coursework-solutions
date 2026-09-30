@@ -1,3 +1,14 @@
+// Задание 34. Ландшафт по карте высот.
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
+import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
+
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
@@ -6,14 +17,6 @@ import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.glu.GLU;
-import java.awt.image.BufferedImage;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.io.File;
-import java.io.IOException;
-import javax.imageio.ImageIO;
-import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
 
 public class T34 extends KeyAdapter implements GLEventListener {
     private final GLU glu = new GLU();
@@ -30,31 +33,7 @@ public class T34 extends KeyAdapter implements GLEventListener {
         }
     }
 
-    public void init(GLAutoDrawable drawable) {
-        GL2 gl = drawable.getGL().getGL2();
-        gl.glEnable(GL.GL_DEPTH_TEST);
-        gl.glClearColor(0.52f, 0.72f, 0.9f, 1.0f);
-    }
-
-    public void display(GLAutoDrawable drawable) {
-        GL2 gl = drawable.getGL().getGL2();
-        gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
-        gl.glMatrixMode(GL2.GL_MODELVIEW);
-        gl.glLoadIdentity();
-        glu.gluLookAt(2.5, -2.8, 2.1, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
-        gl.glRotated(angleX, 1.0, 0.0, 0.0);
-        gl.glRotated(angleZ, 0.0, 0.0, 1.0);
-
-        gl.glEnable(GL2.GL_POLYGON_OFFSET_FILL);
-        gl.glPolygonOffset(1.0f, 1.0f);
-        drawTerrain(gl, true);
-        gl.glDisable(GL2.GL_POLYGON_OFFSET_FILL);
-        gl.glPolygonMode(GL.GL_FRONT_AND_BACK, GL2.GL_LINE);
-        gl.glColor3d(0.08, 0.12, 0.1);
-        drawTerrain(gl, false);
-        gl.glPolygonMode(GL.GL_FRONT_AND_BACK, GL2.GL_FILL);
-    }
-
+    // Вокруг каждой внутренней вершины с нечётными координатами строим веер из восьми треугольников.
     private void drawTerrain(GL2 gl, boolean colored) {
         for (int x = 1; x < heights.length - 1; x += 2) {
             for (int y = 1; y < heights[x].length - 1; y += 2) {
@@ -118,6 +97,34 @@ public class T34 extends KeyAdapter implements GLEventListener {
         return result;
     }
 
+    // Настраиваем фон и буфер глубины один раз при создании OpenGL-контекста.
+    public void init(GLAutoDrawable drawable) {
+        GL2 gl = drawable.getGL().getGL2();
+        gl.glEnable(GL.GL_DEPTH_TEST);
+        gl.glClearColor(0.52f, 0.72f, 0.9f, 1.0f);
+    }
+
+    // Каждый кадр: очищаем буферы, задаём камеру, применяем повороты и рисуем.
+    public void display(GLAutoDrawable drawable) {
+        GL2 gl = drawable.getGL().getGL2();
+        gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
+        gl.glMatrixMode(GL2.GL_MODELVIEW);
+        gl.glLoadIdentity();
+        glu.gluLookAt(2.5, -2.8, 2.1, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
+        gl.glRotated(angleX, 1.0, 0.0, 0.0);
+        gl.glRotated(angleZ, 0.0, 0.0, 1.0);
+
+        gl.glEnable(GL2.GL_POLYGON_OFFSET_FILL);
+        gl.glPolygonOffset(1.0f, 1.0f);
+        drawTerrain(gl, true);
+        gl.glDisable(GL2.GL_POLYGON_OFFSET_FILL);
+        gl.glPolygonMode(GL.GL_FRONT_AND_BACK, GL2.GL_LINE);
+        gl.glColor3d(0.08, 0.12, 0.1);
+        drawTerrain(gl, false);
+        gl.glPolygonMode(GL.GL_FRONT_AND_BACK, GL2.GL_FILL);
+    }
+
+    // При изменении размера окна обновляем область вывода и перспективу.
     public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
         GL2 gl = drawable.getGL().getGL2();
         gl.glViewport(0, 0, width, height);
@@ -129,6 +136,7 @@ public class T34 extends KeyAdapter implements GLEventListener {
     public void dispose(GLAutoDrawable drawable) {
     }
 
+    // Клавиши изменяют состояние сцены; repaint запрашивает новый кадр.
     public void keyPressed(KeyEvent event) {
         if (event.getKeyCode() == KeyEvent.VK_UP) {
             angleX -= 4.0;

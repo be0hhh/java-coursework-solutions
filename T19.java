@@ -1,7 +1,4 @@
-import javax.imageio.ImageIO;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
+// Задание 19. Заливка треугольников.
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Graphics;
@@ -11,6 +8,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 
+import javax.imageio.ImageIO;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+
 public class T19 extends JPanel {
     private static final long serialVersionUID = 1L;
     private final BufferedImage image;
@@ -19,6 +21,7 @@ public class T19 extends JPanel {
         this.image = image;
     }
 
+    // Для каждой строки находим крайние точки рёбер и закрашиваем отрезок между ними.
     public static void fillTriangle(BufferedImage image, Point firstPoint, Point secondPoint, Point thirdPoint, int color) {
         int[] left = new int[image.getHeight()];
         int[] right = new int[image.getHeight()];
@@ -63,6 +66,7 @@ public class T19 extends JPanel {
         return image;
     }
 
+    // Алгоритм Брезенхема проходит ребро без дробных координат и накапливает границы строк.
     private static void collectEdge(int startX, int startY, int endX, int endY, int height, int[] left, int[] right) {
         int deltaX = Math.abs(endX - startX);
         int deltaY = Math.abs(endY - startY);

@@ -1,3 +1,4 @@
+// Задание 15. Переход между летним и зимним изображениями.
 import java.awt.BorderLayout;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -7,10 +8,11 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
+
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
-import javax.swing.InputMap;
 import javax.swing.ActionMap;
+import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -19,6 +21,7 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
 public class T15 {
+    // Слева оставляем лето, справа зиму, в средней трети линейно смешиваем цвета.
     public static BufferedImage process(BufferedImage summer, BufferedImage winter) {
         if (summer.getWidth() != winter.getWidth() || summer.getHeight() != winter.getHeight()) {
             throw new IllegalArgumentException("Images must have equal dimensions");
@@ -52,6 +55,7 @@ public class T15 {
         return result;
     }
 
+    // step от 0 до 10 задаёт долю результата; +5 округляет целочисленную сумму.
     private static BufferedImage blend(BufferedImage source, BufferedImage result, int step) {
         int width = source.getWidth();
         int height = source.getHeight();
@@ -71,6 +75,7 @@ public class T15 {
         return frame;
     }
 
+    // Панель хранит текущий шаг смешивания и вписывает изображение в размер окна.
     private static class ImagePanel extends JPanel {
         private final BufferedImage source;
         private final BufferedImage result;

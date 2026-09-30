@@ -1,11 +1,6 @@
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.StreamTokenizer;
-import java.nio.charset.StandardCharsets;
-import java.awt.Color;
+// Задание 36. Высота поверхности в выбранной точке.
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -14,14 +9,128 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.StreamTokenizer;
+import java.nio.charset.StandardCharsets;
+
 import javax.swing.AbstractAction;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.KeyStroke;
 import javax.swing.JTextArea;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
 public class T36 {
+    private static int nextInt(StreamTokenizer tokens) throws IOException {
+        return (int) nextDouble(tokens);
+    }
+
+    private static double nextDouble(StreamTokenizer tokens) throws IOException {
+        if (tokens.nextToken() != StreamTokenizer.TT_NUMBER) {
+            throw new IOException("Expected a number in height map");
+        }
+        return tokens.nval;
+    }
+
+    // Файл содержит размеры сетки и высоты: сначала все y для первого x, затем для следующего.
+    public static double[][] load(File file) throws IOException {
+        try (InputStreamReader reader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8)) {
+            StreamTokenizer tokens = new StreamTokenizer(reader);
+            int width = nextInt(tokens);
+            int height = nextInt(tokens);
+            if (width < 2 || height < 2) {
+                throw new IOException("Height map must contain at least 2 columns and 2 rows");
+            }
+            double[][] values = new double[width][height];
+            for (int x = 0; x < width; x++) {
+                for (int y = 0; y < height; y++) {
+                    values[x][y] = nextDouble(tokens);
+                }
+            }
+            return values;
+        }
+    }
+
+    // Находим ячейку, выбираем один из двух треугольников и смешиваем высоты его вершин.
+    public static double getZ(double[][] heights, double x, double y) {
+        int width = heights.length;
+        int height = 0;
+        if (width != 0) {
+            height = heights[0].length;
+        }
+        if (width < 2 || height < 2 || Double.isNaN(x) || Double.isNaN(y)
+                || x < 0 || y < 0 || x > width - 1 || y > height - 1) {
+            throw new IllegalArgumentException("Coordinates are outside the height map");
+        }
+        int cellX = (int) Math.floor(x);
+        int cellY = (int) Math.floor(y);
+        if (cellX == width - 1) {
+            cellX--;
+        }
+        if (cellY == height - 1) {
+            cellY--;
+        }
+        double partX = x - cellX;
+        double partY = y - cellY;
+        double topLeftHeight = heights[cellX][cellY];
+        double bottomLeftHeight = heights[cellX][cellY + 1];
+        double topRightHeight = heights[cellX + 1][cellY];
+        double bottomRightHeight = heights[cellX + 1][cellY + 1];
+        // Чётность ячейки задаёт диагональ; веса вершин в каждом треугольнике дают сумму 1.
+        if ((cellX + cellY) % 2 == 0) {
+            if (partY >= partX) {
+                double topLeftPart = topLeftHeight * (1 - partY);
+                double bottomLeftPart = bottomLeftHeight * (partY - partX);
+                double bottomRightPart = bottomRightHeight * partX;
+                return topLeftPart + bottomLeftPart + bottomRightPart;
+            }
+            double topLeftPart = topLeftHeight * (1 - partX);
+            double topRightPart = topRightHeight * (partX - partY);
+            double bottomRightPart = bottomRightHeight * partY;
+            return topLeftPart + topRightPart + bottomRightPart;
+        }
+        if (partY >= 1 - partX) {
+            double bottomLeftPart = bottomLeftHeight * (1 - partX);
+            double topRightPart = topRightHeight * (1 - partY);
+            double bottomRightPart = bottomRightHeight * (partX + partY - 1);
+            return bottomLeftPart + topRightPart + bottomRightPart;
+        }
+        double topLeftPart = topLeftHeight * (1 - partX - partY);
+        double bottomLeftPart = bottomLeftHeight * partY;
+        double topRightPart = topRightHeight * partX;
+        return topLeftPart + bottomLeftPart + topRightPart;
+    }
+
+    private static BufferedImage createMapImage(double[][] heights) {
+        int width = heights.length;
+        int height = heights[0].length;
+        double minimum = Double.POSITIVE_INFINITY;
+        double maximum = Double.NEGATIVE_INFINITY;
+        for (double[] column : heights) {
+            for (double value : column) {
+                minimum = Math.min(minimum, value);
+                maximum = Math.max(maximum, value);
+            }
+        }
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                int gray;
+                if (maximum == minimum) {
+                    gray = 128;
+                } else {
+                    double relativeHeight = heights[x][y] - minimum;
+                    gray = (int) Math.round(38 + 190 * relativeHeight / (maximum - minimum));
+                }
+                image.setRGB(x, y, (gray << 16) | (gray << 8) | gray);
+            }
+        }
+        return image;
+    }
+
     private static final class HeightMapPanel extends JPanel {
         private static final long serialVersionUID = 1L;
         private final double[][] heights;
@@ -123,101 +232,6 @@ public class T36 {
         }
     }
 
-    public static double[][] load(File file) throws IOException {
-        try (InputStreamReader reader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8)) {
-            StreamTokenizer tokens = new StreamTokenizer(reader);
-            int width = nextInt(tokens);
-            int height = nextInt(tokens);
-            if (width < 2 || height < 2) {
-                throw new IOException("Height map must contain at least 2 columns and 2 rows");
-            }
-            double[][] values = new double[width][height];
-            for (int x = 0; x < width; x++) {
-                for (int y = 0; y < height; y++) {
-                    values[x][y] = nextDouble(tokens);
-                }
-            }
-            return values;
-        }
-    }
-
-    public static double getZ(double[][] heights, double x, double y) {
-        int width = heights.length;
-        int height = 0;
-        if (width != 0) {
-            height = heights[0].length;
-        }
-        if (width < 2 || height < 2 || Double.isNaN(x) || Double.isNaN(y)
-                || x < 0 || y < 0 || x > width - 1 || y > height - 1) {
-            throw new IllegalArgumentException("Coordinates are outside the height map");
-        }
-        int cellX = (int) Math.floor(x);
-        int cellY = (int) Math.floor(y);
-        if (cellX == width - 1) {
-            cellX--;
-        }
-        if (cellY == height - 1) {
-            cellY--;
-        }
-        double partX = x - cellX;
-        double partY = y - cellY;
-        double topLeftHeight = heights[cellX][cellY];
-        double bottomLeftHeight = heights[cellX][cellY + 1];
-        double topRightHeight = heights[cellX + 1][cellY];
-        double bottomRightHeight = heights[cellX + 1][cellY + 1];
-        if ((cellX + cellY) % 2 == 0) {
-            if (partY >= partX) {
-                double topLeftPart = topLeftHeight * (1 - partY);
-                double bottomLeftPart = bottomLeftHeight * (partY - partX);
-                double bottomRightPart = bottomRightHeight * partX;
-                return topLeftPart + bottomLeftPart + bottomRightPart;
-            }
-            double topLeftPart = topLeftHeight * (1 - partX);
-            double topRightPart = topRightHeight * (partX - partY);
-            double bottomRightPart = bottomRightHeight * partY;
-            return topLeftPart + topRightPart + bottomRightPart;
-        }
-        if (partY >= 1 - partX) {
-            double bottomLeftPart = bottomLeftHeight * (1 - partX);
-            double topRightPart = topRightHeight * (1 - partY);
-            double bottomRightPart = bottomRightHeight * (partX + partY - 1);
-            return bottomLeftPart + topRightPart + bottomRightPart;
-        }
-        double topLeftPart = topLeftHeight * (1 - partX - partY);
-        double bottomLeftPart = bottomLeftHeight * partY;
-        double topRightPart = topRightHeight * partX;
-        return topLeftPart + bottomLeftPart + topRightPart;
-    }
-
-    private static BufferedImage createMapImage(double[][] heights) {
-        int width = heights.length;
-        int height = heights[0].length;
-        double minimum = Double.POSITIVE_INFINITY;
-        double maximum = Double.NEGATIVE_INFINITY;
-        for (double[] column : heights) {
-            for (double value : column) {
-                minimum = Math.min(minimum, value);
-                maximum = Math.max(maximum, value);
-            }
-        }
-        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                int gray;
-                if (maximum == minimum) {
-                    gray = 128;
-                } else {
-                    double relativeHeight = heights[x][y] - minimum;
-                    double heightRange = maximum - minimum;
-                    double brightness = 38 + 190 * relativeHeight / heightRange;
-                    gray = (int) Math.round(brightness);
-                }
-                image.setRGB(x, y, (gray << 16) | (gray << 8) | gray);
-            }
-        }
-        return image;
-    }
-
     private static void showWindow(double[][] heights) {
         JFrame frame = new JFrame("T36");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -232,17 +246,6 @@ public class T36 {
         frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
-    }
-
-    private static int nextInt(StreamTokenizer tokens) throws IOException {
-        return (int) nextDouble(tokens);
-    }
-
-    private static double nextDouble(StreamTokenizer tokens) throws IOException {
-        if (tokens.nextToken() != StreamTokenizer.TT_NUMBER) {
-            throw new IOException("Expected a number in height map");
-        }
-        return tokens.nval;
     }
 
     public static void main(String[] args) throws Exception {

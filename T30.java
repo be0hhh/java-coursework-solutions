@@ -1,3 +1,11 @@
+// Задание 30. Круглый дом.
+import java.awt.BorderLayout;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+
+import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
+
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
@@ -6,46 +14,13 @@ import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.glu.GLU;
-import java.awt.BorderLayout;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
 
 public class T30 extends KeyAdapter implements GLEventListener {
     private final GLU glu = new GLU();
     private GLCanvas canvas;
     private double angleZ = 0.0;
 
-    public void init(GLAutoDrawable drawable) {
-        GL2 gl = drawable.getGL().getGL2();
-        gl.glEnable(GL.GL_DEPTH_TEST);
-        gl.glClearColor(0.07f, 0.09f, 0.13f, 1.0f);
-    }
-
-    public void display(GLAutoDrawable drawable) {
-        GL2 gl = drawable.getGL().getGL2();
-        gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
-        gl.glMatrixMode(GL2.GL_MODELVIEW);
-        gl.glLoadIdentity();
-        glu.gluLookAt(2.1, -3.4, 1.8, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
-        gl.glRotated(angleZ, 0.0, 0.0, 1.0);
-
-        gl.glPushMatrix();
-        gl.glTranslated(0.0, 0.0, -0.225);
-        gl.glScaled(1.1, 1.1, 0.75);
-        gl.glColor3d(0.95, 0.28, 0.18);
-        drawCylinder(gl);
-        gl.glPopMatrix();
-
-        gl.glPushMatrix();
-        gl.glTranslated(0.0, 0.0, 0.375);
-        gl.glScaled(1.36, 1.36, 0.45);
-        gl.glColor3d(0.18, 0.48, 1.0);
-        drawCone(gl);
-        gl.glPopMatrix();
-    }
-
+    // Дом собирается из цилиндра стен и конуса крыши с помощью переноса и масштаба.
     private void drawCylinder(GL2 gl) {
         int sides = 40;
         double radius = 0.5;
@@ -93,6 +68,38 @@ public class T30 extends KeyAdapter implements GLEventListener {
         gl.glEnd();
     }
 
+    // Настраиваем фон и буфер глубины один раз при создании OpenGL-контекста.
+    public void init(GLAutoDrawable drawable) {
+        GL2 gl = drawable.getGL().getGL2();
+        gl.glEnable(GL.GL_DEPTH_TEST);
+        gl.glClearColor(0.07f, 0.09f, 0.13f, 1.0f);
+    }
+
+    // Каждый кадр: очищаем буферы, задаём камеру, применяем повороты и рисуем.
+    public void display(GLAutoDrawable drawable) {
+        GL2 gl = drawable.getGL().getGL2();
+        gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
+        gl.glMatrixMode(GL2.GL_MODELVIEW);
+        gl.glLoadIdentity();
+        glu.gluLookAt(2.1, -3.4, 1.8, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
+        gl.glRotated(angleZ, 0.0, 0.0, 1.0);
+
+        gl.glPushMatrix();
+        gl.glTranslated(0.0, 0.0, -0.225);
+        gl.glScaled(1.1, 1.1, 0.75);
+        gl.glColor3d(0.95, 0.28, 0.18);
+        drawCylinder(gl);
+        gl.glPopMatrix();
+
+        gl.glPushMatrix();
+        gl.glTranslated(0.0, 0.0, 0.375);
+        gl.glScaled(1.36, 1.36, 0.45);
+        gl.glColor3d(0.18, 0.48, 1.0);
+        drawCone(gl);
+        gl.glPopMatrix();
+    }
+
+    // При изменении размера окна обновляем область вывода и перспективу.
     public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
         GL2 gl = drawable.getGL().getGL2();
         gl.glViewport(0, 0, width, height);
@@ -104,6 +111,7 @@ public class T30 extends KeyAdapter implements GLEventListener {
     public void dispose(GLAutoDrawable drawable) {
     }
 
+    // Клавиши изменяют состояние сцены; repaint запрашивает новый кадр.
     public void keyPressed(KeyEvent event) {
         if (event.getKeyCode() == KeyEvent.VK_LEFT) {
             angleZ -= 5.0;

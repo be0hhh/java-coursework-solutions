@@ -1,11 +1,13 @@
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
+// Задание 20. Круг из кривых Безье.
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 public class T20 extends JPanel {
     private static final long serialVersionUID = 1L;
@@ -20,6 +22,7 @@ public class T20 extends JPanel {
         int centerX = width / 2;
         int centerY = height / 2;
         int radius = Math.min(width, height) / 3;
+        // Длина управляющего отрезка примерно 0.5522847498 * radius: приближаем четверть окружности.
         int handle = (int) Math.round(radius * 0.5522847498);
         Point top = new Point(centerX, centerY - radius);
         Point right = new Point(centerX + radius, centerY);
@@ -42,6 +45,7 @@ public class T20 extends JPanel {
         return image;
     }
 
+    // Кубическая кривая Безье: четыре точки и параметр time от 0 до 1.
     private static void bezier(BufferedImage image, Point startPoint,
             Point firstControlPoint, Point secondControlPoint, Point endPoint) {
         int previousX = startPoint.x;
@@ -63,6 +67,7 @@ public class T20 extends JPanel {
         }
     }
 
+    // Соединяем соседние точки кривой отрезком Брезенхема, чтобы не оставлять разрывов.
     private static void line(BufferedImage image, int startX, int startY, int endX, int endY) {
         int deltaX = Math.abs(endX - startX);
         int deltaY = Math.abs(endY - startY);

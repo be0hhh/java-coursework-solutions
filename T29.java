@@ -1,16 +1,18 @@
+// Задание 29. Операции с векторами и матрицами.
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Locale;
+
 import javax.swing.AbstractAction;
-import javax.swing.JFrame;
 import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
-import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
-import java.util.Locale;
 
 public class T29 {
     public static final class Vector3 {
@@ -95,6 +97,7 @@ public class T29 {
             return new Vector3(a.dot(vector), b.dot(vector), c.dot(vector));
         }
 
+        // Элемент произведения — скалярное произведение строки первой матрицы и столбца второй.
         public Matrix3x3 multiply(Matrix3x3 other) {
             Vector3 column1 = new Vector3(other.a.x, other.b.x, other.c.x);
             Vector3 column2 = new Vector3(other.a.y, other.b.y, other.c.y);
@@ -105,18 +108,17 @@ public class T29 {
                     new Vector3(c.dot(column1), c.dot(column2), c.dot(column3)));
         }
 
+        // Формула Родрига: I + sin(angle) * S + (1 - cos(angle)) * S²; угол в радианах.
         public static Matrix3x3 rotation(Vector3 axis, double angle) {
             Vector3 normalizedAxis = axis.normalize();
             Matrix3x3 crossProductMatrix = new Matrix3x3(
                     new Vector3(0, -normalizedAxis.z, normalizedAxis.y),
                     new Vector3(normalizedAxis.z, 0, -normalizedAxis.x),
                     new Vector3(-normalizedAxis.y, normalizedAxis.x, 0));
-            Matrix3x3 identityMatrix = identity();
             Matrix3x3 sinePart = crossProductMatrix.multiply(Math.sin(angle));
-            Matrix3x3 firstSum = identityMatrix.add(sinePart);
             Matrix3x3 squaredMatrix = crossProductMatrix.multiply(crossProductMatrix);
             Matrix3x3 cosinePart = squaredMatrix.multiply(1 - Math.cos(angle));
-            return firstSum.add(cosinePart);
+            return identity().add(sinePart).add(cosinePart);
         }
 
     }

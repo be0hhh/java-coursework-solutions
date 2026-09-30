@@ -1,3 +1,11 @@
+// Задание 23. Цветной куб.
+import java.awt.BorderLayout;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+
+import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
+
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
@@ -6,34 +14,12 @@ import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.glu.GLU;
-import java.awt.BorderLayout;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
 
 public class T23 extends KeyAdapter implements GLEventListener {
     private final GLU glu = new GLU();
     private GLCanvas canvas;
     private double angleX = 24.0;
     private double angleY = -32.0;
-
-    public void init(GLAutoDrawable drawable) {
-        GL2 gl = drawable.getGL().getGL2();
-        gl.glEnable(GL.GL_DEPTH_TEST);
-        gl.glClearColor(0.08f, 0.08f, 0.11f, 1.0f);
-    }
-
-    public void display(GLAutoDrawable drawable) {
-        GL2 gl = drawable.getGL().getGL2();
-        gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
-        gl.glMatrixMode(GL2.GL_MODELVIEW);
-        gl.glLoadIdentity();
-        glu.gluLookAt(0.0, 0.0, 3.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
-        gl.glRotated(angleX, 1.0, 0.0, 0.0);
-        gl.glRotated(angleY, 0.0, 1.0, 0.0);
-        drawCube(gl);
-    }
 
     private void drawCube(GL2 gl) {
         gl.glBegin(GL2.GL_QUADS);
@@ -70,6 +56,26 @@ public class T23 extends KeyAdapter implements GLEventListener {
         gl.glEnd();
     }
 
+    // Настраиваем фон и буфер глубины один раз при создании OpenGL-контекста.
+    public void init(GLAutoDrawable drawable) {
+        GL2 gl = drawable.getGL().getGL2();
+        gl.glEnable(GL.GL_DEPTH_TEST);
+        gl.glClearColor(0.08f, 0.08f, 0.11f, 1.0f);
+    }
+
+    // Каждый кадр: очищаем буферы, задаём камеру, применяем повороты и рисуем.
+    public void display(GLAutoDrawable drawable) {
+        GL2 gl = drawable.getGL().getGL2();
+        gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
+        gl.glMatrixMode(GL2.GL_MODELVIEW);
+        gl.glLoadIdentity();
+        glu.gluLookAt(0.0, 0.0, 3.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+        gl.glRotated(angleX, 1.0, 0.0, 0.0);
+        gl.glRotated(angleY, 0.0, 1.0, 0.0);
+        drawCube(gl);
+    }
+
+    // При изменении размера окна обновляем область вывода и перспективу.
     public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
         GL2 gl = drawable.getGL().getGL2();
         gl.glViewport(0, 0, width, height);
@@ -81,6 +87,7 @@ public class T23 extends KeyAdapter implements GLEventListener {
     public void dispose(GLAutoDrawable drawable) {
     }
 
+    // Клавиши изменяют состояние сцены; repaint запрашивает новый кадр.
     public void keyPressed(KeyEvent event) {
         if (event.getKeyCode() == KeyEvent.VK_UP) {
             angleX -= 5.0;

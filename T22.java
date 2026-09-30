@@ -1,11 +1,13 @@
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
+// Задание 22. Капля из кривых Безье.
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 public class T22 extends JPanel {
     private static final long serialVersionUID = 1L;
@@ -43,6 +45,7 @@ public class T22 extends JPanel {
         return image;
     }
 
+    // Кубическая кривая Безье: четыре точки и параметр time от 0 до 1.
     private static void bezier(BufferedImage image, Point startPoint,
             Point firstControlPoint, Point secondControlPoint, Point endPoint) {
         int previousX = startPoint.x;
@@ -64,6 +67,7 @@ public class T22 extends JPanel {
         }
     }
 
+    // Соединяем соседние точки кривой отрезком Брезенхема, чтобы не оставлять разрывов.
     private static void line(BufferedImage image, int startX, int startY, int endX, int endY) {
         int deltaX = Math.abs(endX - startX);
         int deltaY = Math.abs(endY - startY);

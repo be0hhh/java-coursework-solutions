@@ -1,3 +1,16 @@
+// Задание 35. Небесный куб с текстурой.
+import java.awt.BorderLayout;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+
+import javax.imageio.ImageIO;
+import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
+
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
@@ -6,16 +19,6 @@ import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.glu.GLU;
-import java.awt.BorderLayout;
-import java.awt.image.BufferedImage;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.io.File;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import javax.imageio.ImageIO;
-import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
 
 public class T35 extends KeyAdapter implements GLEventListener {
     private final GLU glu = new GLU();
@@ -34,14 +37,6 @@ public class T35 extends KeyAdapter implements GLEventListener {
         if (image == null) {
             throw new IllegalArgumentException("Unsupported SkyBox image");
         }
-    }
-
-    public void init(GLAutoDrawable drawable) {
-        GL2 gl = drawable.getGL().getGL2();
-        gl.glEnable(GL.GL_DEPTH_TEST);
-        gl.glDepthFunc(GL.GL_LEQUAL);
-        gl.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        texture = createTexture(gl, image);
     }
 
     private int createTexture(GL2 gl, BufferedImage source) {
@@ -69,21 +64,6 @@ public class T35 extends KeyAdapter implements GLEventListener {
         return textureNames[0];
     }
 
-    public void display(GLAutoDrawable drawable) {
-        GL2 gl = drawable.getGL().getGL2();
-        gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
-        gl.glMatrixMode(GL2.GL_MODELVIEW);
-        gl.glLoadIdentity();
-        glu.gluLookAt(0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0);
-        gl.glRotated(pitch, 1.0, 0.0, 0.0);
-        gl.glRotated(yaw, 0.0, 0.0, 1.0);
-        gl.glEnable(GL.GL_TEXTURE_2D);
-        gl.glBindTexture(GL.GL_TEXTURE_2D, texture);
-        gl.glColor3d(1.0, 1.0, 1.0);
-        drawSkyBox(gl, 8.0);
-        gl.glDisable(GL.GL_TEXTURE_2D);
-    }
-
     private void drawSkyBox(GL2 gl, double size) {
         texturedQuad(gl, 1, 1,
                 new double[] {-size, size, -size}, new double[] {size, size, -size},
@@ -105,6 +85,7 @@ public class T35 extends KeyAdapter implements GLEventListener {
                 new double[] {size, size, -size}, new double[] {-size, size, -size});
     }
 
+    // Каждая грань берёт свою ячейку атласа; отступ в полпикселя уменьшает швы.
     private void texturedQuad(GL2 gl, int column, int row, double[] first, double[] second,
             double[] third, double[] fourth) {
         float[] cell = textureCell(column, row);
@@ -137,6 +118,32 @@ public class T35 extends KeyAdapter implements GLEventListener {
         return new float[] {leftU, rightU, bottomV, topV};
     }
 
+    // Настраиваем фон и буфер глубины один раз при создании OpenGL-контекста.
+    public void init(GLAutoDrawable drawable) {
+        GL2 gl = drawable.getGL().getGL2();
+        gl.glEnable(GL.GL_DEPTH_TEST);
+        gl.glDepthFunc(GL.GL_LEQUAL);
+        gl.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        texture = createTexture(gl, image);
+    }
+
+    // Каждый кадр: очищаем буферы, задаём камеру, применяем повороты и рисуем.
+    public void display(GLAutoDrawable drawable) {
+        GL2 gl = drawable.getGL().getGL2();
+        gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
+        gl.glMatrixMode(GL2.GL_MODELVIEW);
+        gl.glLoadIdentity();
+        glu.gluLookAt(0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0);
+        gl.glRotated(pitch, 1.0, 0.0, 0.0);
+        gl.glRotated(yaw, 0.0, 0.0, 1.0);
+        gl.glEnable(GL.GL_TEXTURE_2D);
+        gl.glBindTexture(GL.GL_TEXTURE_2D, texture);
+        gl.glColor3d(1.0, 1.0, 1.0);
+        drawSkyBox(gl, 8.0);
+        gl.glDisable(GL.GL_TEXTURE_2D);
+    }
+
+    // При изменении размера окна обновляем область вывода и перспективу.
     public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
         GL2 gl = drawable.getGL().getGL2();
         gl.glViewport(0, 0, width, height);
@@ -152,6 +159,7 @@ public class T35 extends KeyAdapter implements GLEventListener {
         }
     }
 
+    // Клавиши изменяют состояние сцены; repaint запрашивает новый кадр.
     public void keyPressed(KeyEvent event) {
         if (event.getKeyCode() == KeyEvent.VK_LEFT) {
             yaw += 4.0;

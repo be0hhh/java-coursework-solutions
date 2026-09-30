@@ -1,16 +1,18 @@
+// Задание 5. Гистограмма зелёного канала.
+import java.awt.BorderLayout;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
-import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
+
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
-import javax.swing.InputMap;
 import javax.swing.ActionMap;
+import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -19,6 +21,7 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
 public class T05 {
+    // Считаем частоты значений зелёного канала и рисуем столбцы поверх исходника.
     public static BufferedImage process(BufferedImage source) {
         int width = source.getWidth();
         int height = source.getHeight();
@@ -45,6 +48,7 @@ public class T05 {
         return result;
     }
 
+    // step от 0 до 10 задаёт долю результата; +5 округляет целочисленную сумму.
     private static BufferedImage blend(BufferedImage source, BufferedImage result, int step) {
         int width = source.getWidth();
         int height = source.getHeight();
@@ -64,6 +68,7 @@ public class T05 {
         return frame;
     }
 
+    // Панель хранит текущий шаг смешивания и вписывает изображение в размер окна.
     private static class ImagePanel extends JPanel {
         private final BufferedImage source;
         private final BufferedImage result;

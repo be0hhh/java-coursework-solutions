@@ -1,16 +1,18 @@
+// Задание 12. Изображение в восьми цветах.
+import java.awt.BorderLayout;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
-import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
+
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
-import javax.swing.InputMap;
 import javax.swing.ActionMap;
+import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -19,6 +21,7 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
 public class T12 {
+    // Каждый канал принимает только 0 или 255: всего 2 * 2 * 2 = 8 цветов.
     public static BufferedImage process(BufferedImage source) {
         BufferedImage result = new BufferedImage(source.getWidth(), source.getHeight(), BufferedImage.TYPE_INT_RGB);
         for (int y = 0; y < source.getHeight(); y++) {
@@ -48,6 +51,7 @@ public class T12 {
         return result;
     }
 
+    // step от 0 до 10 задаёт долю результата; +5 округляет целочисленную сумму.
     private static BufferedImage blend(BufferedImage source, BufferedImage result, int step) {
         int width = source.getWidth();
         int height = source.getHeight();
@@ -67,6 +71,7 @@ public class T12 {
         return frame;
     }
 
+    // Панель хранит текущий шаг смешивания и вписывает изображение в размер окна.
     private static class ImagePanel extends JPanel {
         private final BufferedImage source;
         private final BufferedImage result;
