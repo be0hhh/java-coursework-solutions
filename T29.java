@@ -1,5 +1,5 @@
-// Задание 29: операции с трёхмерными векторами и матрицами.
 import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -69,10 +69,10 @@ public class T29 {
         public final Vector3 b;
         public final Vector3 c;
 
-        public Matrix3x3(Vector3 a, Vector3 b, Vector3 c) {
-            this.a = a;
-            this.b = b;
-            this.c = c;
+        public Matrix3x3(Vector3 firstRow, Vector3 secondRow, Vector3 thirdRow) {
+            this.a = firstRow;
+            this.b = secondRow;
+            this.c = thirdRow;
         }
 
         public static Matrix3x3 identity() {
@@ -106,12 +106,17 @@ public class T29 {
         }
 
         public static Matrix3x3 rotation(Vector3 axis, double angle) {
-            Vector3 v = axis.normalize();
-            Matrix3x3 s = new Matrix3x3(
-                    new Vector3(0, -v.z, v.y),
-                    new Vector3(v.z, 0, -v.x),
-                    new Vector3(-v.y, v.x, 0));
-            return identity().add(s.multiply(Math.sin(angle))).add(s.multiply(s).multiply(1 - Math.cos(angle)));
+            Vector3 normalizedAxis = axis.normalize();
+            Matrix3x3 crossProductMatrix = new Matrix3x3(
+                    new Vector3(0, -normalizedAxis.z, normalizedAxis.y),
+                    new Vector3(normalizedAxis.z, 0, -normalizedAxis.x),
+                    new Vector3(-normalizedAxis.y, normalizedAxis.x, 0));
+            Matrix3x3 identityMatrix = identity();
+            Matrix3x3 sinePart = crossProductMatrix.multiply(Math.sin(angle));
+            Matrix3x3 firstSum = identityMatrix.add(sinePart);
+            Matrix3x3 squaredMatrix = crossProductMatrix.multiply(crossProductMatrix);
+            Matrix3x3 cosinePart = squaredMatrix.multiply(1 - Math.cos(angle));
+            return firstSum.add(cosinePart);
         }
 
     }
@@ -155,15 +160,6 @@ public class T29 {
                 matrix.c.x, matrix.c.y, matrix.c.z);
     }
 
-    private static void bindKey(JComponent panel, String name, int key, Runnable action) {
-        panel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(key, 0), name);
-        panel.getActionMap().put(name, new AbstractAction() {
-            public void actionPerformed(java.awt.event.ActionEvent event) {
-                action.run();
-            }
-        });
-    }
-
     private static final class ResultPanel extends JTextArea {
         private final String[] results = results();
         private int index;
@@ -177,16 +173,43 @@ public class T29 {
             showResult();
             addMouseListener(new MouseAdapter() {
                 public void mouseClicked(MouseEvent event) {
-                    if (event.getButton() == MouseEvent.BUTTON1) move(1);
+                    if (event.getButton() == MouseEvent.BUTTON1) {
+                        nextResult();
+                    }
                 }
             });
-            bindKey(this, "next", KeyEvent.VK_RIGHT, () -> move(1));
-            bindKey(this, "previous", KeyEvent.VK_LEFT, () -> move(-1));
-            bindKey(this, "reset", KeyEvent.VK_R, () -> move(-index));
+            getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), "next");
+            getActionMap().put("next", new AbstractAction() {
+                public void actionPerformed(ActionEvent event) {
+                    nextResult();
+                }
+            });
+            getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0), "previous");
+            getActionMap().put("previous", new AbstractAction() {
+                public void actionPerformed(ActionEvent event) {
+                    previousResult();
+                }
+            });
+            getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_R, 0), "reset");
+            getActionMap().put("reset", new AbstractAction() {
+                public void actionPerformed(ActionEvent event) {
+                    resetResult();
+                }
+            });
         }
 
-        void move(int delta) {
-            index = Math.max(0, Math.min(results.length - 1, index + delta));
+        private void nextResult() {
+            index = Math.max(0, Math.min(results.length - 1, index + 1));
+            showResult();
+        }
+
+        private void previousResult() {
+            index = Math.max(0, Math.min(results.length - 1, index - 1));
+            showResult();
+        }
+
+        private void resetResult() {
+            index = 0;
             showResult();
         }
 
@@ -207,6 +230,10 @@ public class T29 {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(T29::showWindow);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                showWindow();
+            }
+        });
     }
 }

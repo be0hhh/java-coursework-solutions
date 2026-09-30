@@ -1,4 +1,3 @@
-// Задание 32: Снеговик.
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
@@ -89,15 +88,15 @@ public class T32 extends KeyAdapter implements GLEventListener {
         int latitudeSteps = 18;
         int longitudeSteps = 36;
         for (int latitude = 0; latitude < latitudeSteps; latitude++) {
-            double first = -Math.PI / 2.0 + Math.PI * latitude / latitudeSteps;
-            double second = -Math.PI / 2.0 + Math.PI * (latitude + 1) / latitudeSteps;
+            double firstLatitude = -Math.PI / 2.0 + Math.PI * latitude / latitudeSteps;
+            double secondLatitude = -Math.PI / 2.0 + Math.PI * (latitude + 1) / latitudeSteps;
             gl.glBegin(GL2.GL_QUAD_STRIP);
             for (int longitude = 0; longitude <= longitudeSteps; longitude++) {
                 double angle = 2.0 * Math.PI * longitude / longitudeSteps;
-                gl.glVertex3d(Math.cos(first) * Math.cos(angle),
-                        Math.cos(first) * Math.sin(angle), Math.sin(first));
-                gl.glVertex3d(Math.cos(second) * Math.cos(angle),
-                        Math.cos(second) * Math.sin(angle), Math.sin(second));
+                gl.glVertex3d(Math.cos(firstLatitude) * Math.cos(angle),
+                        Math.cos(firstLatitude) * Math.sin(angle), Math.sin(firstLatitude));
+                gl.glVertex3d(Math.cos(secondLatitude) * Math.cos(angle),
+                        Math.cos(secondLatitude) * Math.sin(angle), Math.sin(secondLatitude));
             }
             gl.glEnd();
         }
@@ -107,14 +106,14 @@ public class T32 extends KeyAdapter implements GLEventListener {
         int sides = 36;
         gl.glBegin(GL2.GL_TRIANGLE_FAN);
         gl.glVertex3d(0.0, 0.0, -0.5);
-        for (int i = sides; i >= 0; i--) {
-            double angle = 2.0 * Math.PI * i / sides;
+        for (int side = sides; side >= 0; side--) {
+            double angle = 2.0 * Math.PI * side / sides;
             gl.glVertex3d(0.5 * Math.cos(angle), 0.5 * Math.sin(angle), -0.5);
         }
         gl.glEnd();
         gl.glBegin(GL2.GL_QUAD_STRIP);
-        for (int i = 0; i <= sides; i++) {
-            double angle = 2.0 * Math.PI * i / sides;
+        for (int side = 0; side <= sides; side++) {
+            double angle = 2.0 * Math.PI * side / sides;
             double x = 0.5 * Math.cos(angle);
             double y = 0.5 * Math.sin(angle);
             gl.glVertex3d(x, y, -0.5);
@@ -123,8 +122,8 @@ public class T32 extends KeyAdapter implements GLEventListener {
         gl.glEnd();
         gl.glBegin(GL2.GL_TRIANGLE_FAN);
         gl.glVertex3d(0.0, 0.0, 0.5);
-        for (int i = 0; i <= sides; i++) {
-            double angle = 2.0 * Math.PI * i / sides;
+        for (int side = 0; side <= sides; side++) {
+            double angle = 2.0 * Math.PI * side / sides;
             gl.glVertex3d(0.5 * Math.cos(angle), 0.5 * Math.sin(angle), 0.5);
         }
         gl.glEnd();
@@ -134,32 +133,34 @@ public class T32 extends KeyAdapter implements GLEventListener {
         int sides = 30;
         gl.glBegin(GL2.GL_TRIANGLE_FAN);
         gl.glVertex3d(0.0, 0.0, -0.5);
-        for (int i = sides; i >= 0; i--) {
-            double angle = 2.0 * Math.PI * i / sides;
+        for (int side = sides; side >= 0; side--) {
+            double angle = 2.0 * Math.PI * side / sides;
             gl.glVertex3d(0.5 * Math.cos(angle), 0.5 * Math.sin(angle), -0.5);
         }
         gl.glEnd();
         gl.glBegin(GL2.GL_TRIANGLE_FAN);
         gl.glVertex3d(0.0, 0.0, 0.5);
-        for (int i = 0; i <= sides; i++) {
-            double angle = 2.0 * Math.PI * i / sides;
+        for (int side = 0; side <= sides; side++) {
+            double angle = 2.0 * Math.PI * side / sides;
             gl.glVertex3d(0.5 * Math.cos(angle), 0.5 * Math.sin(angle), -0.5);
         }
         gl.glEnd();
     }
 
-    private void drawTorusArc(GL2 gl, double radius, double tube, double start, double end) {
+    private void drawTorusArc(GL2 gl, double radius, double tubeRadius, double startAngle, double endAngle) {
         int arcSteps = 36;
         int tubeSteps = 12;
-        for (int i = 0; i < arcSteps; i++) {
-            double first = start + (end - start) * i / arcSteps;
-            double second = start + (end - start) * (i + 1) / arcSteps;
+        for (int arcStep = 0; arcStep < arcSteps; arcStep++) {
+            double firstAngle = startAngle + (endAngle - startAngle) * arcStep / arcSteps;
+            double secondAngle = startAngle + (endAngle - startAngle) * (arcStep + 1) / arcSteps;
             gl.glBegin(GL2.GL_QUAD_STRIP);
-            for (int j = 0; j <= tubeSteps; j++) {
-                double around = 2.0 * Math.PI * j / tubeSteps;
-                double distance = radius + tube * Math.cos(around);
-                gl.glVertex3d(distance * Math.cos(first), distance * Math.sin(first), tube * Math.sin(around));
-                gl.glVertex3d(distance * Math.cos(second), distance * Math.sin(second), tube * Math.sin(around));
+            for (int tubeStep = 0; tubeStep <= tubeSteps; tubeStep++) {
+                double tubeAngle = 2.0 * Math.PI * tubeStep / tubeSteps;
+                double distance = radius + tubeRadius * Math.cos(tubeAngle);
+                gl.glVertex3d(distance * Math.cos(firstAngle), distance * Math.sin(firstAngle),
+                        tubeRadius * Math.sin(tubeAngle));
+                gl.glVertex3d(distance * Math.cos(secondAngle), distance * Math.sin(secondAngle),
+                        tubeRadius * Math.sin(tubeAngle));
             }
             gl.glEnd();
         }
@@ -177,8 +178,12 @@ public class T32 extends KeyAdapter implements GLEventListener {
     }
 
     public void keyPressed(KeyEvent event) {
-        if (event.getKeyCode() == KeyEvent.VK_LEFT) angleZ -= 5.0;
-        if (event.getKeyCode() == KeyEvent.VK_RIGHT) angleZ += 5.0;
+        if (event.getKeyCode() == KeyEvent.VK_LEFT) {
+            angleZ -= 5.0;
+        }
+        if (event.getKeyCode() == KeyEvent.VK_RIGHT) {
+            angleZ += 5.0;
+        }
         canvas.repaint();
     }
 

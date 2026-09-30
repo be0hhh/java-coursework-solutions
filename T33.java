@@ -1,4 +1,3 @@
-// Задание 33: Свободная камера.
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
@@ -16,9 +15,9 @@ import javax.swing.SwingUtilities;
 public class T33 extends KeyAdapter implements GLEventListener {
     private final GLU glu = new GLU();
     private GLCanvas canvas;
-    private double[] camPOS = new double[] {0.0, -3.0, 1.0};
-    private double[] camDIR = normalize(new double[] {0.0, 1.0, -0.12});
-    private double[] camUP = normalize(new double[] {0.0, 0.12, 1.0});
+    private double[] cameraPosition = new double[] {0.0, -3.0, 1.0};
+    private double[] cameraDirection = normalize(new double[] {0.0, 1.0, -0.12});
+    private double[] cameraUp = normalize(new double[] {0.0, 0.12, 1.0});
 
     public void init(GLAutoDrawable drawable) {
         GL2 gl = drawable.getGL().getGL2();
@@ -31,9 +30,11 @@ public class T33 extends KeyAdapter implements GLEventListener {
         gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
         gl.glMatrixMode(GL2.GL_MODELVIEW);
         gl.glLoadIdentity();
-        glu.gluLookAt(camPOS[0], camPOS[1], camPOS[2],
-                camPOS[0] + camDIR[0], camPOS[1] + camDIR[1], camPOS[2] + camDIR[2],
-                camUP[0], camUP[1], camUP[2]);
+        glu.gluLookAt(cameraPosition[0], cameraPosition[1], cameraPosition[2],
+                cameraPosition[0] + cameraDirection[0],
+                cameraPosition[1] + cameraDirection[1],
+                cameraPosition[2] + cameraDirection[2],
+                cameraUp[0], cameraUp[1], cameraUp[2]);
         drawScene(gl);
     }
 
@@ -48,11 +49,11 @@ public class T33 extends KeyAdapter implements GLEventListener {
 
         gl.glColor3d(0.42, 0.46, 0.49);
         gl.glBegin(GL2.GL_LINES);
-        for (int i = -8; i <= 8; i++) {
-            gl.glVertex3d(i, -8.0, -0.5);
-            gl.glVertex3d(i, 8.0, -0.5);
-            gl.glVertex3d(-8.0, i, -0.5);
-            gl.glVertex3d(8.0, i, -0.5);
+        for (int gridLine = -8; gridLine <= 8; gridLine++) {
+            gl.glVertex3d(gridLine, -8.0, -0.5);
+            gl.glVertex3d(gridLine, 8.0, -0.5);
+            gl.glVertex3d(-8.0, gridLine, -0.5);
+            gl.glVertex3d(8.0, gridLine, -0.5);
         }
         gl.glEnd();
 
@@ -114,38 +115,59 @@ public class T33 extends KeyAdapter implements GLEventListener {
 
     public void keyPressed(KeyEvent event) {
         int key = event.getKeyCode();
-        if (key == KeyEvent.VK_W) move(0.18);
-        if (key == KeyEvent.VK_S) move(-0.18);
-        if (key == KeyEvent.VK_A) camDIR = normalize(rotate(camDIR, camUP, 4.0));
-        if (key == KeyEvent.VK_D) camDIR = normalize(rotate(camDIR, camUP, -4.0));
-        if (key == KeyEvent.VK_Q) camUP = normalize(rotate(camUP, camDIR, 4.0));
-        if (key == KeyEvent.VK_E) camUP = normalize(rotate(camUP, camDIR, -4.0));
-        if (key == KeyEvent.VK_UP) pitch(4.0);
-        if (key == KeyEvent.VK_DOWN) pitch(-4.0);
-        if (key == KeyEvent.VK_R) resetCamera();
+        if (key == KeyEvent.VK_W) {
+            move(0.18);
+        }
+        if (key == KeyEvent.VK_S) {
+            move(-0.18);
+        }
+        if (key == KeyEvent.VK_A) {
+            cameraDirection = normalize(rotate(cameraDirection, cameraUp, 4.0));
+        }
+        if (key == KeyEvent.VK_D) {
+            cameraDirection = normalize(rotate(cameraDirection, cameraUp, -4.0));
+        }
+        if (key == KeyEvent.VK_Q) {
+            cameraUp = normalize(rotate(cameraUp, cameraDirection, 4.0));
+        }
+        if (key == KeyEvent.VK_E) {
+            cameraUp = normalize(rotate(cameraUp, cameraDirection, -4.0));
+        }
+        if (key == KeyEvent.VK_UP) {
+            pitch(4.0);
+        }
+        if (key == KeyEvent.VK_DOWN) {
+            pitch(-4.0);
+        }
+        if (key == KeyEvent.VK_R) {
+            resetCamera();
+        }
         canvas.repaint();
     }
 
     private void move(double distance) {
-        camPOS[0] += camDIR[0] * distance;
-        camPOS[1] += camDIR[1] * distance;
-        camPOS[2] += camDIR[2] * distance;
+        cameraPosition[0] += cameraDirection[0] * distance;
+        cameraPosition[1] += cameraDirection[1] * distance;
+        cameraPosition[2] += cameraDirection[2] * distance;
     }
 
     private void pitch(double degrees) {
-        double[] axis = normalize(cross(camDIR, camUP));
-        camDIR = normalize(rotate(camDIR, axis, degrees));
-        camUP = normalize(rotate(camUP, axis, degrees));
+        double[] axis = normalize(cross(cameraDirection, cameraUp));
+        cameraDirection = normalize(rotate(cameraDirection, axis, degrees));
+        cameraUp = normalize(rotate(cameraUp, axis, degrees));
     }
 
     private void resetCamera() {
-        camPOS = new double[] {0.0, -3.0, 1.0};
-        camDIR = normalize(new double[] {0.0, 1.0, -0.12});
-        camUP = normalize(new double[] {0.0, 0.12, 1.0});
+        cameraPosition = new double[] {0.0, -3.0, 1.0};
+        cameraDirection = normalize(new double[] {0.0, 1.0, -0.12});
+        cameraUp = normalize(new double[] {0.0, 0.12, 1.0});
     }
 
     static double[] normalize(double[] vector) {
-        double length = Math.sqrt(vector[0] * vector[0] + vector[1] * vector[1] + vector[2] * vector[2]);
+        double squaredX = vector[0] * vector[0];
+        double squaredY = vector[1] * vector[1];
+        double squaredZ = vector[2] * vector[2];
+        double length = Math.sqrt(squaredX + squaredY + squaredZ);
         if (length == 0.0 || !Double.isFinite(length)) {
             throw new IllegalArgumentException("Vector must have a finite non-zero length");
         }
@@ -165,13 +187,19 @@ public class T33 extends KeyAdapter implements GLEventListener {
         double radians = Math.toRadians(degrees);
         double cosine = Math.cos(radians);
         double sine = Math.sin(radians);
-        double dot = vector[0] * unitAxis[0] + vector[1] * unitAxis[1] + vector[2] * unitAxis[2];
+        double projectionX = vector[0] * unitAxis[0];
+        double projectionY = vector[1] * unitAxis[1];
+        double projectionZ = vector[2] * unitAxis[2];
+        double axisProjection = projectionX + projectionY + projectionZ;
         double[] perpendicular = cross(unitAxis, vector);
-        return new double[] {
-            vector[0] * cosine + perpendicular[0] * sine + unitAxis[0] * dot * (1.0 - cosine),
-            vector[1] * cosine + perpendicular[1] * sine + unitAxis[1] * dot * (1.0 - cosine),
-            vector[2] * cosine + perpendicular[2] * sine + unitAxis[2] * dot * (1.0 - cosine)
-        };
+        double[] rotatedVector = new double[3];
+        for (int coordinate = 0; coordinate < 3; coordinate++) {
+            double vectorPart = vector[coordinate] * cosine;
+            double perpendicularPart = perpendicular[coordinate] * sine;
+            double axisPart = unitAxis[coordinate] * axisProjection * (1.0 - cosine);
+            rotatedVector[coordinate] = vectorPart + perpendicularPart + axisPart;
+        }
+        return rotatedVector;
     }
 
     private void start() {

@@ -1,4 +1,3 @@
-// Задание 31: Конфета.
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
@@ -61,14 +60,14 @@ public class T31 extends KeyAdapter implements GLEventListener {
         int sides = 32;
         gl.glBegin(GL2.GL_TRIANGLE_FAN);
         gl.glVertex3d(0.0, 0.0, -0.5);
-        for (int i = sides; i >= 0; i--) {
-            double angle = 2.0 * Math.PI * i / sides;
+        for (int side = sides; side >= 0; side--) {
+            double angle = 2.0 * Math.PI * side / sides;
             gl.glVertex3d(0.5 * Math.cos(angle), 0.5 * Math.sin(angle), -0.5);
         }
         gl.glEnd();
         gl.glBegin(GL2.GL_QUAD_STRIP);
-        for (int i = 0; i <= sides; i++) {
-            double angle = 2.0 * Math.PI * i / sides;
+        for (int side = 0; side <= sides; side++) {
+            double angle = 2.0 * Math.PI * side / sides;
             double x = 0.5 * Math.cos(angle);
             double y = 0.5 * Math.sin(angle);
             gl.glVertex3d(x, y, -0.5);
@@ -77,8 +76,8 @@ public class T31 extends KeyAdapter implements GLEventListener {
         gl.glEnd();
         gl.glBegin(GL2.GL_TRIANGLE_FAN);
         gl.glVertex3d(0.0, 0.0, 0.5);
-        for (int i = 0; i <= sides; i++) {
-            double angle = 2.0 * Math.PI * i / sides;
+        for (int side = 0; side <= sides; side++) {
+            double angle = 2.0 * Math.PI * side / sides;
             gl.glVertex3d(0.5 * Math.cos(angle), 0.5 * Math.sin(angle), 0.5);
         }
         gl.glEnd();
@@ -88,15 +87,15 @@ public class T31 extends KeyAdapter implements GLEventListener {
         int sides = 32;
         gl.glBegin(GL2.GL_TRIANGLE_FAN);
         gl.glVertex3d(0.0, 0.0, -0.5);
-        for (int i = sides; i >= 0; i--) {
-            double angle = 2.0 * Math.PI * i / sides;
+        for (int side = sides; side >= 0; side--) {
+            double angle = 2.0 * Math.PI * side / sides;
             gl.glVertex3d(0.5 * Math.cos(angle), 0.5 * Math.sin(angle), -0.5);
         }
         gl.glEnd();
         gl.glBegin(GL2.GL_TRIANGLE_FAN);
         gl.glVertex3d(0.0, 0.0, 0.5);
-        for (int i = 0; i <= sides; i++) {
-            double angle = 2.0 * Math.PI * i / sides;
+        for (int side = 0; side <= sides; side++) {
+            double angle = 2.0 * Math.PI * side / sides;
             gl.glVertex3d(0.5 * Math.cos(angle), 0.5 * Math.sin(angle), -0.5);
         }
         gl.glEnd();
@@ -114,10 +113,18 @@ public class T31 extends KeyAdapter implements GLEventListener {
     }
 
     public void keyPressed(KeyEvent event) {
-        if (event.getKeyCode() == KeyEvent.VK_UP) angleX -= 5.0;
-        if (event.getKeyCode() == KeyEvent.VK_DOWN) angleX += 5.0;
-        if (event.getKeyCode() == KeyEvent.VK_LEFT) angleZ -= 5.0;
-        if (event.getKeyCode() == KeyEvent.VK_RIGHT) angleZ += 5.0;
+        if (event.getKeyCode() == KeyEvent.VK_UP) {
+            angleX -= 5.0;
+        }
+        if (event.getKeyCode() == KeyEvent.VK_DOWN) {
+            angleX += 5.0;
+        }
+        if (event.getKeyCode() == KeyEvent.VK_LEFT) {
+            angleZ -= 5.0;
+        }
+        if (event.getKeyCode() == KeyEvent.VK_RIGHT) {
+            angleZ += 5.0;
+        }
         canvas.repaint();
     }
 

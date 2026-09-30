@@ -1,4 +1,3 @@
-// Задание 36. Рассчитать высоту поверхности в выбранной точке карты.
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -28,8 +27,8 @@ public class T36 {
         private final double[][] heights;
         private final BufferedImage image;
         private final JTextArea output;
-        private double x;
-        private double y;
+        private double selectedX;
+        private double selectedY;
         private int imageLeft;
         private int imageTop;
         private int imageWidth;
@@ -40,26 +39,58 @@ public class T36 {
             this.image = image;
             this.output = output;
             setPreferredSize(new Dimension(640, 480));
-            x = (heights.length - 1) / 2.0;
-            y = (heights[0].length - 1) / 2.0;
+            selectedX = (heights.length - 1) / 2.0;
+            selectedY = (heights[0].length - 1) / 2.0;
             updateOutput();
             addMouseListener(new MouseAdapter() {
                 public void mouseClicked(MouseEvent event) {
-                    if (event.getButton() != MouseEvent.BUTTON1 || imageWidth <= 1 || imageHeight <= 1) return;
-                    int px = event.getX() - imageLeft;
-                    int py = event.getY() - imageTop;
-                    if (px < 0 || py < 0 || px >= imageWidth || py >= imageHeight) return;
-                    x = px * (heights.length - 1.0) / (imageWidth - 1.0);
-                    y = py * (heights[0].length - 1.0) / (imageHeight - 1.0);
+                    if (event.getButton() != MouseEvent.BUTTON1 || imageWidth <= 1 || imageHeight <= 1) {
+                        return;
+                    }
+                    int mouseX = event.getX() - imageLeft;
+                    int mouseY = event.getY() - imageTop;
+                    if (mouseX < 0 || mouseY < 0 || mouseX >= imageWidth || mouseY >= imageHeight) {
+                        return;
+                    }
+                    selectedX = mouseX * (heights.length - 1.0) / (imageWidth - 1.0);
+                    selectedY = mouseY * (heights[0].length - 1.0) / (imageHeight - 1.0);
                     updateOutput();
                     repaint();
                 }
             });
+            getInputMap(JPanel.WHEN_IN_FOCUSED_WINDOW).put(
+                    KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0), "left");
+            getActionMap().put("left", new AbstractAction() {
+                public void actionPerformed(java.awt.event.ActionEvent event) {
+                    movePoint(-1, 0);
+                }
+            });
+            getInputMap(JPanel.WHEN_IN_FOCUSED_WINDOW).put(
+                    KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), "right");
+            getActionMap().put("right", new AbstractAction() {
+                public void actionPerformed(java.awt.event.ActionEvent event) {
+                    movePoint(1, 0);
+                }
+            });
+            getInputMap(JPanel.WHEN_IN_FOCUSED_WINDOW).put(
+                    KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), "up");
+            getActionMap().put("up", new AbstractAction() {
+                public void actionPerformed(java.awt.event.ActionEvent event) {
+                    movePoint(0, -1);
+                }
+            });
+            getInputMap(JPanel.WHEN_IN_FOCUSED_WINDOW).put(
+                    KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), "down");
+            getActionMap().put("down", new AbstractAction() {
+                public void actionPerformed(java.awt.event.ActionEvent event) {
+                    movePoint(0, 1);
+                }
+            });
         }
 
-        void movePoint(int dx, int dy) {
-            x = Math.max(0.0, Math.min(heights.length - 1.0, x + dx));
-            y = Math.max(0.0, Math.min(heights[0].length - 1.0, y + dy));
+        void movePoint(int horizontalStep, int verticalStep) {
+            selectedX = Math.max(0.0, Math.min(heights.length - 1.0, selectedX + horizontalStep));
+            selectedY = Math.max(0.0, Math.min(heights[0].length - 1.0, selectedY + verticalStep));
             updateOutput();
             repaint();
         }
@@ -67,12 +98,12 @@ public class T36 {
         private void updateOutput() {
             output.setText(String.format(java.util.Locale.ROOT,
                     "x = %.2f, y = %.2f; высота по трём вершинам треугольника = %.2f",
-                    x, y, getZ(heights, x, y)));
+                    selectedX, selectedY, getZ(heights, selectedX, selectedY)));
         }
 
         protected void paintComponent(Graphics graphics) {
             super.paintComponent(graphics);
-            Graphics2D g = (Graphics2D) graphics.create();
+            Graphics2D drawing = (Graphics2D) graphics.create();
             int padding = 24;
             double scale = Math.min((getWidth() - 2.0 * padding) / image.getWidth(),
                     (getHeight() - 2.0 * padding) / image.getHeight());
@@ -80,13 +111,15 @@ public class T36 {
             imageHeight = Math.max(1, (int) Math.round(image.getHeight() * scale));
             imageLeft = (getWidth() - imageWidth) / 2;
             imageTop = (getHeight() - imageHeight) / 2;
-            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-            g.drawImage(image, imageLeft, imageTop, imageWidth, imageHeight, null);
-            int markerX = imageLeft + (int) Math.round(x * (imageWidth - 1.0) / Math.max(1, heights.length - 1));
-            int markerY = imageTop + (int) Math.round(y * (imageHeight - 1.0) / Math.max(1, heights[0].length - 1));
-            g.setColor(Color.RED);
-            g.drawOval(markerX - 5, markerY - 5, 10, 10);
-            g.dispose();
+            drawing.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+            drawing.drawImage(image, imageLeft, imageTop, imageWidth, imageHeight, null);
+            double markerOffsetX = selectedX * (imageWidth - 1.0) / Math.max(1, heights.length - 1);
+            double markerOffsetY = selectedY * (imageHeight - 1.0) / Math.max(1, heights[0].length - 1);
+            int markerX = imageLeft + (int) Math.round(markerOffsetX);
+            int markerY = imageTop + (int) Math.round(markerOffsetY);
+            drawing.setColor(Color.RED);
+            drawing.drawOval(markerX - 5, markerY - 5, 10, 10);
+            drawing.dispose();
         }
     }
 
@@ -110,8 +143,12 @@ public class T36 {
 
     public static double getZ(double[][] heights, double x, double y) {
         int width = heights.length;
-        int height = width == 0 ? 0 : heights[0].length;
-        if (width < 2 || height < 2 || Double.isNaN(x) || Double.isNaN(y) || x < 0 || y < 0 || x > width - 1 || y > height - 1) {
+        int height = 0;
+        if (width != 0) {
+            height = heights[0].length;
+        }
+        if (width < 2 || height < 2 || Double.isNaN(x) || Double.isNaN(y)
+                || x < 0 || y < 0 || x > width - 1 || y > height - 1) {
             throw new IllegalArgumentException("Coordinates are outside the height map");
         }
         int cellX = (int) Math.floor(x);
@@ -124,20 +161,32 @@ public class T36 {
         }
         double partX = x - cellX;
         double partY = y - cellY;
-        double z00 = heights[cellX][cellY];
-        double z01 = heights[cellX][cellY + 1];
-        double z10 = heights[cellX + 1][cellY];
-        double z11 = heights[cellX + 1][cellY + 1];
+        double topLeftHeight = heights[cellX][cellY];
+        double bottomLeftHeight = heights[cellX][cellY + 1];
+        double topRightHeight = heights[cellX + 1][cellY];
+        double bottomRightHeight = heights[cellX + 1][cellY + 1];
         if ((cellX + cellY) % 2 == 0) {
             if (partY >= partX) {
-                return z00 * (1 - partY) + z01 * (partY - partX) + z11 * partX;
+                double topLeftPart = topLeftHeight * (1 - partY);
+                double bottomLeftPart = bottomLeftHeight * (partY - partX);
+                double bottomRightPart = bottomRightHeight * partX;
+                return topLeftPart + bottomLeftPart + bottomRightPart;
             }
-            return z00 * (1 - partX) + z10 * (partX - partY) + z11 * partY;
+            double topLeftPart = topLeftHeight * (1 - partX);
+            double topRightPart = topRightHeight * (partX - partY);
+            double bottomRightPart = bottomRightHeight * partY;
+            return topLeftPart + topRightPart + bottomRightPart;
         }
         if (partY >= 1 - partX) {
-            return z01 * (1 - partX) + z10 * (1 - partY) + z11 * (partX + partY - 1);
+            double bottomLeftPart = bottomLeftHeight * (1 - partX);
+            double topRightPart = topRightHeight * (1 - partY);
+            double bottomRightPart = bottomRightHeight * (partX + partY - 1);
+            return bottomLeftPart + topRightPart + bottomRightPart;
         }
-        return z00 * (1 - partX - partY) + z01 * partY + z10 * partX;
+        double topLeftPart = topLeftHeight * (1 - partX - partY);
+        double bottomLeftPart = bottomLeftHeight * partY;
+        double topRightPart = topRightHeight * partX;
+        return topLeftPart + bottomLeftPart + topRightPart;
     }
 
     private static BufferedImage createMapImage(double[][] heights) {
@@ -154,20 +203,19 @@ public class T36 {
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
-                int gray = maximum == minimum ? 128 : (int) Math.round(38 + 190 * (heights[x][y] - minimum) / (maximum - minimum));
+                int gray;
+                if (maximum == minimum) {
+                    gray = 128;
+                } else {
+                    double relativeHeight = heights[x][y] - minimum;
+                    double heightRange = maximum - minimum;
+                    double brightness = 38 + 190 * relativeHeight / heightRange;
+                    gray = (int) Math.round(brightness);
+                }
                 image.setRGB(x, y, (gray << 16) | (gray << 8) | gray);
             }
         }
         return image;
-    }
-
-    private static void bindKey(JPanel panel, String name, int key, Runnable action) {
-        panel.getInputMap(JPanel.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(key, 0), name);
-        panel.getActionMap().put(name, new AbstractAction() {
-            public void actionPerformed(java.awt.event.ActionEvent event) {
-                action.run();
-            }
-        });
     }
 
     private static void showWindow(double[][] heights) {
@@ -179,10 +227,6 @@ public class T36 {
         output.setLineWrap(true);
         output.setWrapStyleWord(true);
         HeightMapPanel map = new HeightMapPanel(heights, createMapImage(heights), output);
-        bindKey(map, "left", KeyEvent.VK_LEFT, () -> map.movePoint(-1, 0));
-        bindKey(map, "right", KeyEvent.VK_RIGHT, () -> map.movePoint(1, 0));
-        bindKey(map, "up", KeyEvent.VK_UP, () -> map.movePoint(0, -1));
-        bindKey(map, "down", KeyEvent.VK_DOWN, () -> map.movePoint(0, 1));
         frame.add(map, BorderLayout.CENTER);
         frame.add(output, BorderLayout.SOUTH);
         frame.pack();
@@ -202,8 +246,17 @@ public class T36 {
     }
 
     public static void main(String[] args) throws Exception {
-        File file = args.length == 0 ? new File("assets/landscape/H.txt") : new File(args[0]);
+        File file;
+        if (args.length == 0) {
+            file = new File("assets/landscape/H.txt");
+        } else {
+            file = new File(args[0]);
+        }
         double[][] heights = load(file);
-        SwingUtilities.invokeLater(() -> showWindow(heights));
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                showWindow(heights);
+            }
+        });
     }
 }

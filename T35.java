@@ -1,4 +1,3 @@
-// Задание 35: Небесный куб с текстурой.
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
@@ -32,7 +31,9 @@ public class T35 extends KeyAdapter implements GLEventListener {
         } catch (IOException exception) {
             throw new IllegalArgumentException("Cannot load assets/texture/SkyBox.jpg", exception);
         }
-        if (image == null) throw new IllegalArgumentException("Unsupported SkyBox image");
+        if (image == null) {
+            throw new IllegalArgumentException("Unsupported SkyBox image");
+        }
     }
 
     public void init(GLAutoDrawable drawable) {
@@ -54,9 +55,9 @@ public class T35 extends KeyAdapter implements GLEventListener {
             }
         }
         pixels.rewind();
-        int[] names = new int[1];
-        gl.glGenTextures(1, names, 0);
-        gl.glBindTexture(GL.GL_TEXTURE_2D, names[0]);
+        int[] textureNames = new int[1];
+        gl.glGenTextures(1, textureNames, 0);
+        gl.glBindTexture(GL.GL_TEXTURE_2D, textureNames[0]);
         gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_MODE, GL2.GL_MODULATE);
         gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
         gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR);
@@ -65,7 +66,7 @@ public class T35 extends KeyAdapter implements GLEventListener {
         gl.glPixelStorei(GL.GL_UNPACK_ALIGNMENT, 1);
         gl.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGB, source.getWidth(), source.getHeight(),
                 0, GL.GL_RGB, GL.GL_UNSIGNED_BYTE, pixels);
-        return names[0];
+        return textureNames[0];
     }
 
     public void display(GLAutoDrawable drawable) {
@@ -107,20 +108,20 @@ public class T35 extends KeyAdapter implements GLEventListener {
     private void texturedQuad(GL2 gl, int column, int row, double[] first, double[] second,
             double[] third, double[] fourth) {
         float[] cell = textureCell(column, row);
-        float insetU = 0.5f / image.getWidth();
-        float insetV = 0.5f / image.getHeight();
-        float u0 = cell[0] + insetU;
-        float u1 = cell[1] - insetU;
-        float v0 = cell[2] + insetV;
-        float v1 = cell[3] - insetV;
+        float horizontalInset = 0.5f / image.getWidth();
+        float verticalInset = 0.5f / image.getHeight();
+        float leftU = cell[0] + horizontalInset;
+        float rightU = cell[1] - horizontalInset;
+        float bottomV = cell[2] + verticalInset;
+        float topV = cell[3] - verticalInset;
         gl.glBegin(GL2.GL_QUADS);
-        gl.glTexCoord2f(u0, v0);
+        gl.glTexCoord2f(leftU, bottomV);
         gl.glVertex3dv(first, 0);
-        gl.glTexCoord2f(u1, v0);
+        gl.glTexCoord2f(rightU, bottomV);
         gl.glVertex3dv(second, 0);
-        gl.glTexCoord2f(u1, v1);
+        gl.glTexCoord2f(rightU, topV);
         gl.glVertex3dv(third, 0);
-        gl.glTexCoord2f(u0, v1);
+        gl.glTexCoord2f(leftU, topV);
         gl.glVertex3dv(fourth, 0);
         gl.glEnd();
     }
@@ -129,11 +130,11 @@ public class T35 extends KeyAdapter implements GLEventListener {
         if (column < 0 || column > 3 || row < 0 || row > 3) {
             throw new IllegalArgumentException("Atlas cell is outside the 4 by 4 texture");
         }
-        float u0 = column / 4.0f;
-        float u1 = (column + 1) / 4.0f;
-        float v0 = 1.0f - (row + 1) / 4.0f;
-        float v1 = 1.0f - row / 4.0f;
-        return new float[] {u0, u1, v0, v1};
+        float leftU = column / 4.0f;
+        float rightU = (column + 1) / 4.0f;
+        float bottomV = 1.0f - (row + 1) / 4.0f;
+        float topV = 1.0f - row / 4.0f;
+        return new float[] {leftU, rightU, bottomV, topV};
     }
 
     public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
@@ -152,10 +153,18 @@ public class T35 extends KeyAdapter implements GLEventListener {
     }
 
     public void keyPressed(KeyEvent event) {
-        if (event.getKeyCode() == KeyEvent.VK_LEFT) yaw += 4.0;
-        if (event.getKeyCode() == KeyEvent.VK_RIGHT) yaw -= 4.0;
-        if (event.getKeyCode() == KeyEvent.VK_UP) pitch += 4.0;
-        if (event.getKeyCode() == KeyEvent.VK_DOWN) pitch -= 4.0;
+        if (event.getKeyCode() == KeyEvent.VK_LEFT) {
+            yaw += 4.0;
+        }
+        if (event.getKeyCode() == KeyEvent.VK_RIGHT) {
+            yaw -= 4.0;
+        }
+        if (event.getKeyCode() == KeyEvent.VK_UP) {
+            pitch += 4.0;
+        }
+        if (event.getKeyCode() == KeyEvent.VK_DOWN) {
+            pitch -= 4.0;
+        }
         canvas.repaint();
     }
 

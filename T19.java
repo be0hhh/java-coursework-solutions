@@ -1,4 +1,3 @@
-// Задание 19: закрасить треугольники на изображении.
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -20,14 +19,14 @@ public class T19 extends JPanel {
         this.image = image;
     }
 
-    public static void fillTriangle(BufferedImage image, Point p1, Point p2, Point p3, int color) {
+    public static void fillTriangle(BufferedImage image, Point firstPoint, Point secondPoint, Point thirdPoint, int color) {
         int[] left = new int[image.getHeight()];
         int[] right = new int[image.getHeight()];
         Arrays.fill(left, Integer.MAX_VALUE);
         Arrays.fill(right, Integer.MIN_VALUE);
-        collectEdge(p1.x, p1.y, p2.x, p2.y, image.getHeight(), left, right);
-        collectEdge(p2.x, p2.y, p3.x, p3.y, image.getHeight(), left, right);
-        collectEdge(p3.x, p3.y, p1.x, p1.y, image.getHeight(), left, right);
+        collectEdge(firstPoint.x, firstPoint.y, secondPoint.x, secondPoint.y, image.getHeight(), left, right);
+        collectEdge(secondPoint.x, secondPoint.y, thirdPoint.x, thirdPoint.y, image.getHeight(), left, right);
+        collectEdge(thirdPoint.x, thirdPoint.y, firstPoint.x, firstPoint.y, image.getHeight(), left, right);
         for (int y = 0; y < image.getHeight(); y++) {
             if (left[y] != Integer.MAX_VALUE) {
                 for (int x = Math.max(0, left[y]); x <= Math.min(image.getWidth() - 1, right[y]); x++) {
@@ -64,47 +63,47 @@ public class T19 extends JPanel {
         return image;
     }
 
-    private static void collectEdge(int x1, int y1, int x2, int y2, int height, int[] left, int[] right) {
-        int dx = Math.abs(x2 - x1);
-        int dy = Math.abs(y2 - y1);
-        if (dx >= dy) {
-            if (x1 > x2) {
-                int value = x1;
-                x1 = x2;
-                x2 = value;
-                value = y1;
-                y1 = y2;
-                y2 = value;
+    private static void collectEdge(int startX, int startY, int endX, int endY, int height, int[] left, int[] right) {
+        int deltaX = Math.abs(endX - startX);
+        int deltaY = Math.abs(endY - startY);
+        if (deltaX >= deltaY) {
+            if (startX > endX) {
+                int temporary = startX;
+                startX = endX;
+                endX = temporary;
+                temporary = startY;
+                startY = endY;
+                endY = temporary;
             }
             int error = 0;
-            int y = y1;
-            int directionY = sign(y2 - y1);
-            for (int x = x1; x <= x2; x++) {
+            int y = startY;
+            int directionY = sign(endY - startY);
+            for (int x = startX; x <= endX; x++) {
                 collect(x, y, height, left, right);
-                error += dy;
-                if (error + error >= dx) {
+                error += deltaY;
+                if (error + error >= deltaX) {
                     y += directionY;
-                    error -= dx;
+                    error -= deltaX;
                 }
             }
         } else {
-            if (y1 > y2) {
-                int value = x1;
-                x1 = x2;
-                x2 = value;
-                value = y1;
-                y1 = y2;
-                y2 = value;
+            if (startY > endY) {
+                int temporary = startX;
+                startX = endX;
+                endX = temporary;
+                temporary = startY;
+                startY = endY;
+                endY = temporary;
             }
             int error = 0;
-            int x = x1;
-            int directionX = sign(x2 - x1);
-            for (int y = y1; y <= y2; y++) {
+            int x = startX;
+            int directionX = sign(endX - startX);
+            for (int y = startY; y <= endY; y++) {
                 collect(x, y, height, left, right);
-                error += dx;
-                if (error + error >= dy) {
+                error += deltaX;
+                if (error + error >= deltaY) {
                     x += directionX;
-                    error -= dy;
+                    error -= deltaY;
                 }
             }
         }

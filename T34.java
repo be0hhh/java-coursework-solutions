@@ -1,4 +1,3 @@
-// Задание 34: Ландшафт по карте высот.
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
@@ -77,7 +76,9 @@ public class T34 extends KeyAdapter implements GLEventListener {
 
     private void terrainVertex(GL2 gl, int x, int y, boolean colored) {
         double height = heights[x][y];
-        if (colored) setTerrainColor(gl, height);
+        if (colored) {
+            setTerrainColor(gl, height);
+        }
         double worldX = 2.0 * x / (heights.length - 1) - 1.0;
         double worldY = 2.0 * y / (heights[x].length - 1) - 1.0;
         double worldZ = 0.8 * height - 0.35;
@@ -97,7 +98,9 @@ public class T34 extends KeyAdapter implements GLEventListener {
 
     static double[][] loadHeightMap(String path) throws IOException {
         BufferedImage image = ImageIO.read(new File(path));
-        if (image == null) throw new IOException("Unsupported height map: " + path);
+        if (image == null) {
+            throw new IOException("Unsupported height map: " + path);
+        }
         double[][] result = new double[image.getWidth()][image.getHeight()];
         for (int x = 0; x < image.getWidth(); x++) {
             for (int y = 0; y < image.getHeight(); y++) {
@@ -127,10 +130,18 @@ public class T34 extends KeyAdapter implements GLEventListener {
     }
 
     public void keyPressed(KeyEvent event) {
-        if (event.getKeyCode() == KeyEvent.VK_UP) angleX -= 4.0;
-        if (event.getKeyCode() == KeyEvent.VK_DOWN) angleX += 4.0;
-        if (event.getKeyCode() == KeyEvent.VK_LEFT) angleZ -= 4.0;
-        if (event.getKeyCode() == KeyEvent.VK_RIGHT) angleZ += 4.0;
+        if (event.getKeyCode() == KeyEvent.VK_UP) {
+            angleX -= 4.0;
+        }
+        if (event.getKeyCode() == KeyEvent.VK_DOWN) {
+            angleX += 4.0;
+        }
+        if (event.getKeyCode() == KeyEvent.VK_LEFT) {
+            angleZ -= 4.0;
+        }
+        if (event.getKeyCode() == KeyEvent.VK_RIGHT) {
+            angleZ += 4.0;
+        }
         canvas.repaint();
     }
 

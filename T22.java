@@ -1,4 +1,3 @@
-// Задание 22: построить контур носа кривыми Безье.
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -44,39 +43,52 @@ public class T22 extends JPanel {
         return image;
     }
 
-    private static void bezier(BufferedImage image, Point p0, Point p1, Point p2, Point p3) {
-        int oldX = p0.x;
-        int oldY = p0.y;
-        for (int i = 0; i <= 1000; i++) {
-            double t = i / 1000.0;
-            double u = 1 - t;
-            int x = (int) (u * u * u * p0.x + 3 * t * u * u * p1.x + 3 * t * t * u * p2.x + t * t * t * p3.x);
-            int y = (int) (u * u * u * p0.y + 3 * t * u * u * p1.y + 3 * t * t * u * p2.y + t * t * t * p3.y);
-            line(image, oldX, oldY, x, y);
-            oldX = x;
-            oldY = y;
+    private static void bezier(BufferedImage image, Point startPoint,
+            Point firstControlPoint, Point secondControlPoint, Point endPoint) {
+        int previousX = startPoint.x;
+        int previousY = startPoint.y;
+        for (int step = 0; step <= 1000; step++) {
+            double time = step / 1000.0;
+            double remainingTime = 1 - time;
+            int x = (int) (remainingTime * remainingTime * remainingTime * startPoint.x
+                    + 3 * time * remainingTime * remainingTime * firstControlPoint.x
+                    + 3 * time * time * remainingTime * secondControlPoint.x
+                    + time * time * time * endPoint.x);
+            int y = (int) (remainingTime * remainingTime * remainingTime * startPoint.y
+                    + 3 * time * remainingTime * remainingTime * firstControlPoint.y
+                    + 3 * time * time * remainingTime * secondControlPoint.y
+                    + time * time * time * endPoint.y);
+            line(image, previousX, previousY, x, y);
+            previousX = x;
+            previousY = y;
         }
     }
 
-    private static void line(BufferedImage image, int x1, int y1, int x2, int y2) {
-        int dx = Math.abs(x2 - x1);
-        int dy = Math.abs(y2 - y1);
-        int sx = x1 < x2 ? 1 : -1;
-        int sy = y1 < y2 ? 1 : -1;
-        int error = dx - dy;
+    private static void line(BufferedImage image, int startX, int startY, int endX, int endY) {
+        int deltaX = Math.abs(endX - startX);
+        int deltaY = Math.abs(endY - startY);
+        int directionX = -1;
+        if (startX < endX) {
+            directionX = 1;
+        }
+        int directionY = -1;
+        if (startY < endY) {
+            directionY = 1;
+        }
+        int error = deltaX - deltaY;
         while (true) {
-            image.setRGB(x1, y1, Color.BLACK.getRGB());
-            if (x1 == x2 && y1 == y2) {
+            image.setRGB(startX, startY, Color.BLACK.getRGB());
+            if (startX == endX && startY == endY) {
                 return;
             }
             int twiceError = error * 2;
-            if (twiceError > -dy) {
-                error -= dy;
-                x1 += sx;
+            if (twiceError > -deltaY) {
+                error -= deltaY;
+                startX += directionX;
             }
-            if (twiceError < dx) {
-                error += dx;
-                y1 += sy;
+            if (twiceError < deltaX) {
+                error += deltaX;
+                startY += directionY;
             }
         }
     }

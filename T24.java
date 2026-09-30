@@ -1,4 +1,3 @@
-// Задание 24: Конус.
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
@@ -68,10 +67,18 @@ public class T24 extends KeyAdapter implements GLEventListener {
     }
 
     public void keyPressed(KeyEvent event) {
-        if (event.getKeyCode() == KeyEvent.VK_UP) angleX -= 5.0;
-        if (event.getKeyCode() == KeyEvent.VK_DOWN) angleX += 5.0;
-        if (event.getKeyCode() == KeyEvent.VK_LEFT) angleZ -= 5.0;
-        if (event.getKeyCode() == KeyEvent.VK_RIGHT) angleZ += 5.0;
+        if (event.getKeyCode() == KeyEvent.VK_UP) {
+            angleX -= 5.0;
+        }
+        if (event.getKeyCode() == KeyEvent.VK_DOWN) {
+            angleX += 5.0;
+        }
+        if (event.getKeyCode() == KeyEvent.VK_LEFT) {
+            angleZ -= 5.0;
+        }
+        if (event.getKeyCode() == KeyEvent.VK_RIGHT) {
+            angleZ += 5.0;
+        }
         canvas.repaint();
     }
 
