@@ -18,8 +18,8 @@ public class T20 extends JPanel {
         int centerX = width / 2;
         int centerY = height / 2;
         int radius = Math.min(width, height) / 3;
-        // Длина управляющего отрезка примерно 0.5522847498 * radius: приближаем четверть окружности.
-        int handle = (int) Math.round(radius * 0.5522847498);
+        // Длина управляющего отрезка примерно 0.5523 * radius: приближаем четверть окружности.
+        int handle = (int) Math.round(radius * 0.5523);
         Point top = new Point(centerX, centerY - radius);
         Point right = new Point(centerX + radius, centerY);
         Point bottom = new Point(centerX, centerY + radius);

@@ -89,7 +89,8 @@ public class FirstFourGuiChecks {
                     }
                 });
                 robot.delay(350);
-                int x = i == 3 ? 160 : 10;
+                // В T05 уровень зелёного 160 расположен около x=94 в гистограмме шириной 150.
+                int x = i == 3 ? 94 : 10;
                 checkPixel(task + " initial image", x, 0xa0a0a0);
                 click(robot);
                 checkPixel(task + " first click", x, i < 2 ? full[i] : partial[i]);

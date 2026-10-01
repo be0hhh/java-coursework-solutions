@@ -11,7 +11,9 @@ public class T32 extends KeyAdapter implements GLEventListener {
     // Суть задания: drawSphere, drawCylinder, drawCone и drawTorusArc строят детали; display собирает снеговика.
     private final GLU glu = new GLU();
     private GLCanvas canvas;
-    private double angleZ = 0.0;
+    // Стрелки поворачивают всю фигуру относительно экрана, независимо от её собственной оси.
+    private double screenAngleX;
+    private double screenAngleY;
 
     private void drawScaledSphere(GL2 gl, double x, double y, double z, double radius,
             double red, double green, double blue) {
@@ -127,10 +129,15 @@ public class T32 extends KeyAdapter implements GLEventListener {
         gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
         gl.glMatrixMode(GL2.GL_MODELVIEW);
         gl.glLoadIdentity();
+        // Центр фигуры остаётся на месте: переносим его в начало, поворачиваем, возвращаем назад.
+        double viewDistance = Math.sqrt(1.7 * 1.7 + (-4.0) * (-4.0) + 1.33 * 1.33);
+        gl.glTranslated(0.0, 0.0, -viewDistance);
+        // Здесь X — горизонталь экрана, Y — вертикаль; углы задаются в градусах.
+        gl.glRotated(screenAngleX, 1.0, 0.0, 0.0);
+        gl.glRotated(screenAngleY, 0.0, 1.0, 0.0);
+        gl.glTranslated(0.0, 0.0, viewDistance);
         // Аргументы: положение камеры (3), точка взгляда (3), направление верха камеры (3).
         glu.gluLookAt(1.7, -4.0, 1.35, 0.0, 0.0, 0.02, 0.0, 0.0, 1.0);
-        // Первый аргумент — угол в градусах; следующие три задают ось вращения.
-        gl.glRotated(angleZ, 0.0, 0.0, 1.0);
         gl.glTranslated(0.0, 0.0, -0.1);
 
         drawScaledSphere(gl, 0.0, 0.0, -0.25, 0.42, 0.72, 0.75, 0.78);
@@ -195,11 +202,17 @@ public class T32 extends KeyAdapter implements GLEventListener {
 
     // Клавиши изменяют состояние сцены; repaint запрашивает новый кадр.
     public void keyPressed(KeyEvent event) {
+        if (event.getKeyCode() == KeyEvent.VK_UP) {
+            screenAngleX -= 5.0;
+        }
+        if (event.getKeyCode() == KeyEvent.VK_DOWN) {
+            screenAngleX += 5.0;
+        }
         if (event.getKeyCode() == KeyEvent.VK_LEFT) {
-            angleZ -= 5.0;
+            screenAngleY -= 5.0;
         }
         if (event.getKeyCode() == KeyEvent.VK_RIGHT) {
-            angleZ += 5.0;
+            screenAngleY += 5.0;
         }
         canvas.repaint();
     }

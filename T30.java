@@ -12,7 +12,9 @@ public class T30 extends KeyAdapter implements GLEventListener {
     // Суть задания: drawCylinder и drawCone строят части дома; display размещает стены и крышу.
     private final GLU glu = new GLU();
     private GLCanvas canvas;
-    private double angleZ = 0.0;
+    // Стрелки поворачивают всю фигуру относительно экрана, независимо от её собственной оси.
+    private double screenAngleX;
+    private double screenAngleY;
 
     // Дом собирается из цилиндра стен и конуса крыши с помощью переноса и масштаба.
     private void drawCylinder(GL2 gl) {
@@ -78,10 +80,15 @@ public class T30 extends KeyAdapter implements GLEventListener {
         gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
         gl.glMatrixMode(GL2.GL_MODELVIEW);
         gl.glLoadIdentity();
+        // Центр фигуры остаётся на месте: переносим его в начало, поворачиваем, возвращаем назад.
+        double viewDistance = Math.sqrt(2.1 * 2.1 + (-3.4) * (-3.4) + 1.8 * 1.8);
+        gl.glTranslated(0.0, 0.0, -viewDistance);
+        // Здесь X — горизонталь экрана, Y — вертикаль; углы задаются в градусах.
+        gl.glRotated(screenAngleX, 1.0, 0.0, 0.0);
+        gl.glRotated(screenAngleY, 0.0, 1.0, 0.0);
+        gl.glTranslated(0.0, 0.0, viewDistance);
         // Аргументы: положение камеры (3), точка взгляда (3), направление верха камеры (3).
         glu.gluLookAt(2.1, -3.4, 1.8, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
-        // Первый аргумент — угол в градусах; следующие три задают ось вращения.
-        gl.glRotated(angleZ, 0.0, 0.0, 1.0);
 
         // Сохраняем матрицу; вызовы ниже применяются к вершине в обратном порядке: масштаб, поворот, перенос (если заданы).
         gl.glPushMatrix();
@@ -116,11 +123,17 @@ public class T30 extends KeyAdapter implements GLEventListener {
 
     // Клавиши изменяют состояние сцены; repaint запрашивает новый кадр.
     public void keyPressed(KeyEvent event) {
+        if (event.getKeyCode() == KeyEvent.VK_UP) {
+            screenAngleX -= 5.0;
+        }
+        if (event.getKeyCode() == KeyEvent.VK_DOWN) {
+            screenAngleX += 5.0;
+        }
         if (event.getKeyCode() == KeyEvent.VK_LEFT) {
-            angleZ -= 5.0;
+            screenAngleY -= 5.0;
         }
         if (event.getKeyCode() == KeyEvent.VK_RIGHT) {
-            angleZ += 5.0;
+            screenAngleY += 5.0;
         }
         canvas.repaint();
     }

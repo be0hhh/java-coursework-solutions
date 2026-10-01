@@ -28,12 +28,20 @@ public class T05 {
         for (int value : histogram) {
             maximum = Math.max(maximum, value);
         }
+        // Верхняя левая четверть: половина ширины и половина высоты изображения.
+        int chartWidth = width / 2;
         int chartHeight = height / 2;
-        for (int x = 0; x < Math.min(256, width); x++) {
+        for (int value = 0; value < 256; value++) {
+            // Все 256 уровней размещаем по ширине четверти, независимо от размера исходника.
+            int left = (int) ((long) value * chartWidth / 256);
+            // +255 округляет правую границу вверх: на узкой картинке уровни не пропадают.
+            int right = (int) (((long) (value + 1) * chartWidth + 255) / 256);
             // (long) расширяет число ДО умножения, чтобы произведение не переполнило int.
-            int barHeight = (int) ((long) histogram[x] * chartHeight / maximum);
-            for (int y = chartHeight - barHeight; y < chartHeight; y++) {
-                result.setRGB(x, y, 0x00ff00); // 0xRRGGBB — зелёный: R=0, G=255, B=0.
+            int barHeight = (int) ((long) histogram[value] * chartHeight / maximum);
+            for (int x = left; x < right; x++) {
+                for (int y = chartHeight - barHeight; y < chartHeight; y++) {
+                    result.setRGB(x, y, 0x00ff00); // 0xRRGGBB — зелёный: R=0, G=255, B=0.
+                }
             }
         }
         return result;
