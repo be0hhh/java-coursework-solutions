@@ -1,31 +1,28 @@
 // Задание 32. Снеговик.
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 
-import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
-import com.jogamp.opengl.GL;
-import com.jogamp.opengl.GL2;
-import com.jogamp.opengl.GLAutoDrawable;
-import com.jogamp.opengl.GLCapabilities;
-import com.jogamp.opengl.GLEventListener;
-import com.jogamp.opengl.GLProfile;
+import com.jogamp.opengl.*;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.glu.GLU;
 
 public class T32 extends KeyAdapter implements GLEventListener {
+    // Суть задания: drawSphere, drawCylinder, drawCone и drawTorusArc строят детали; display собирает снеговика.
     private final GLU glu = new GLU();
     private GLCanvas canvas;
     private double angleZ = 0.0;
 
     private void drawScaledSphere(GL2 gl, double x, double y, double z, double radius,
             double red, double green, double blue) {
+        // Сохраняем матрицу; вызовы ниже применяются к вершине в обратном порядке: масштаб, поворот, перенос (если заданы).
         gl.glPushMatrix();
         gl.glTranslated(x, y, z);
         gl.glScaled(radius, radius, radius);
+        // В OpenGL цвет задаётся долями RGB от 0 до 1: 1 соответствует 255, 0 — отсутствию канала.
         gl.glColor3d(red, green, blue);
         drawSphere(gl);
+        // Восстанавливаем матрицу: преобразования этой детали не затронут следующую.
         gl.glPopMatrix();
     }
 
@@ -34,6 +31,7 @@ public class T32 extends KeyAdapter implements GLEventListener {
         int latitudeSteps = 18;
         int longitudeSteps = 36;
         for (int latitude = 0; latitude < latitudeSteps; latitude++) {
+            // Широта меняется от -PI/2 до PI/2, долгота — от 0 до 2*PI; углы в радианах.
             double firstLatitude = -Math.PI / 2.0 + Math.PI * latitude / latitudeSteps;
             double secondLatitude = -Math.PI / 2.0 + Math.PI * (latitude + 1) / latitudeSteps;
             gl.glBegin(GL2.GL_QUAD_STRIP);
@@ -53,6 +51,7 @@ public class T32 extends KeyAdapter implements GLEventListener {
         gl.glBegin(GL2.GL_TRIANGLE_FAN);
         gl.glVertex3d(0.0, 0.0, -0.5);
         for (int side = sides; side >= 0; side--) {
+            // 2*PI радиан — полный круг; side/sides задаёт долю оборота, sin/cos дают точку окружности.
             double angle = 2.0 * Math.PI * side / sides;
             gl.glVertex3d(0.5 * Math.cos(angle), 0.5 * Math.sin(angle), -0.5);
         }
@@ -102,6 +101,7 @@ public class T32 extends KeyAdapter implements GLEventListener {
             gl.glBegin(GL2.GL_QUAD_STRIP);
             for (int tubeStep = 0; tubeStep <= tubeSteps; tubeStep++) {
                 double tubeAngle = 2.0 * Math.PI * tubeStep / tubeSteps;
+                // У тора radius — радиус кольца, tubeRadius — радиус трубки вокруг кольца.
                 double distance = radius + tubeRadius * Math.cos(tubeAngle);
                 gl.glVertex3d(distance * Math.cos(firstAngle), distance * Math.sin(firstAngle),
                         tubeRadius * Math.sin(tubeAngle));
@@ -116,25 +116,33 @@ public class T32 extends KeyAdapter implements GLEventListener {
     public void init(GLAutoDrawable drawable) {
         GL2 gl = drawable.getGL().getGL2();
         gl.glEnable(GL.GL_DEPTH_TEST);
+        // Четыре значения — RGBA от 0 до 1; суффикс f означает float, последний 1.0f — непрозрачность.
         gl.glClearColor(0.06f, 0.15f, 0.22f, 1.0f);
     }
 
     // Каждый кадр: очищаем буферы, задаём камеру, применяем повороты и рисуем.
     public void display(GLAutoDrawable drawable) {
         GL2 gl = drawable.getGL().getGL2();
+        // Побитовое | объединяет флаги: очищаем и цвет кадра, и буфер глубины.
         gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
         gl.glMatrixMode(GL2.GL_MODELVIEW);
         gl.glLoadIdentity();
+        // Аргументы: положение камеры (3), точка взгляда (3), направление верха камеры (3).
         glu.gluLookAt(1.7, -4.0, 1.35, 0.0, 0.0, 0.02, 0.0, 0.0, 1.0);
+        // Первый аргумент — угол в градусах; следующие три задают ось вращения.
         gl.glRotated(angleZ, 0.0, 0.0, 1.0);
         gl.glTranslated(0.0, 0.0, -0.1);
 
         drawScaledSphere(gl, 0.0, 0.0, -0.25, 0.42, 0.72, 0.75, 0.78);
         drawScaledSphere(gl, 0.0, 0.0, 0.34, 0.25, 0.76, 0.79, 0.82);
-        drawScaledSphere(gl, -0.46, 0.0, -0.08, 0.15, 0.67, 0.70, 0.73);
-        drawScaledSphere(gl, 0.46, 0.0, -0.08, 0.15, 0.67, 0.70, 0.73);
-        drawScaledSphere(gl, -0.09, -0.235, 0.405, 0.035, 0.02, 0.02, 0.02);
-        drawScaledSphere(gl, 0.09, -0.235, 0.405, 0.035, 0.02, 0.02, 0.02);
+        // Знак side размещает одинаковые руки слева и справа.
+        for (int side = -1; side <= 1; side += 2) {
+            drawScaledSphere(gl, side * 0.46, 0.0, -0.08, 0.15, 0.67, 0.70, 0.73);
+        }
+        // Аналогично размещаем два глаза.
+        for (int side = -1; side <= 1; side += 2) {
+            drawScaledSphere(gl, side * 0.09, -0.235, 0.405, 0.035, 0.02, 0.02, 0.02);
+        }
 
         gl.glPushMatrix();
         gl.glTranslated(0.0, -0.255, 0.31);
@@ -178,6 +186,7 @@ public class T32 extends KeyAdapter implements GLEventListener {
         gl.glViewport(0, 0, width, height);
         gl.glMatrixMode(GL2.GL_PROJECTION);
         gl.glLoadIdentity();
+        // Угол обзора в градусах, дробное отношение ширины к высоте, ближняя и дальняя плоскости отсечения.
         glu.gluPerspective(36.0, (double) width / Math.max(1, height), 0.1, 20.0);
     }
 

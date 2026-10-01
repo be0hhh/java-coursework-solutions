@@ -1,24 +1,17 @@
 // Задание 34. Ландшафт по карте высот.
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 
 import javax.imageio.ImageIO;
-import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
-import com.jogamp.opengl.GL;
-import com.jogamp.opengl.GL2;
-import com.jogamp.opengl.GLAutoDrawable;
-import com.jogamp.opengl.GLCapabilities;
-import com.jogamp.opengl.GLEventListener;
-import com.jogamp.opengl.GLProfile;
+import com.jogamp.opengl.*;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.glu.GLU;
 
 public class T34 extends KeyAdapter implements GLEventListener {
+    // Суть задания: loadHeightMap получает высоты из яркости; drawTerrain соединяет вершины поверхности.
     private final GLU glu = new GLU();
     private final double[][] heights;
     private GLCanvas canvas;
@@ -58,14 +51,17 @@ public class T34 extends KeyAdapter implements GLEventListener {
         if (colored) {
             setTerrainColor(gl, height);
         }
+        // Координаты сетки 0..(размер-1) переводим в координаты сцены -1..1.
         double worldX = 2.0 * x / (heights.length - 1) - 1.0;
         double worldY = 2.0 * y / (heights[x].length - 1) - 1.0;
+        // Высоты 0..1 сжимаем до 0.8 и смещаем вниз на 0.35.
         double worldZ = 0.8 * height - 0.35;
         gl.glVertex3d(worldX, worldY, worldZ);
     }
 
     private void setTerrainColor(GL2 gl, double height) {
         if (height < 0.25) {
+            // В OpenGL цвет задаётся долями RGB от 0 до 1: 1 соответствует 255, 0 — отсутствию канала.
             gl.glColor3d(0.12, 0.35 + height, 0.18);
         } else if (height < 0.65) {
             gl.glColor3d(0.22 + height * 0.35, 0.42, 0.16);
@@ -84,12 +80,16 @@ public class T34 extends KeyAdapter implements GLEventListener {
         for (int x = 0; x < image.getWidth(); x++) {
             for (int y = 0; y < image.getHeight(); y++) {
                 if (image.getRaster().getNumBands() == 1) {
+                    // /255.0 превращает исходную яркость 0..255 в дробную высоту 0..1.
                     result[x][y] = image.getRaster().getSample(x, y, 0) / 255.0;
                 } else {
+                    // getRGB возвращает 0xAARRGGBB: по 8 бит на прозрачность, красный, зелёный и синий.
                     int color = image.getRGB(x, y);
+                    // Сдвиг на 16/8 бит выделяет R/G; &255 (0xFF) оставляет 8 бит канала, B берём без сдвига.
                     int red = (color >>> 16) & 255;
                     int green = (color >>> 8) & 255;
                     int blue = color & 255;
+                    // Усредняем RGB и делим на 255: получаем нормированную яркость 0..1.
                     result[x][y] = (red + green + blue) / (3.0 * 255.0);
                 }
             }
@@ -101,20 +101,25 @@ public class T34 extends KeyAdapter implements GLEventListener {
     public void init(GLAutoDrawable drawable) {
         GL2 gl = drawable.getGL().getGL2();
         gl.glEnable(GL.GL_DEPTH_TEST);
+        // Четыре значения — RGBA от 0 до 1; суффикс f означает float, последний 1.0f — непрозрачность.
         gl.glClearColor(0.52f, 0.72f, 0.9f, 1.0f);
     }
 
     // Каждый кадр: очищаем буферы, задаём камеру, применяем повороты и рисуем.
     public void display(GLAutoDrawable drawable) {
         GL2 gl = drawable.getGL().getGL2();
+        // Побитовое | объединяет флаги: очищаем и цвет кадра, и буфер глубины.
         gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
         gl.glMatrixMode(GL2.GL_MODELVIEW);
         gl.glLoadIdentity();
+        // Аргументы: положение камеры (3), точка взгляда (3), направление верха камеры (3).
         glu.gluLookAt(2.5, -2.8, 2.1, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
+        // Первый аргумент — угол в градусах; следующие три задают ось вращения.
         gl.glRotated(angleX, 1.0, 0.0, 0.0);
         gl.glRotated(angleZ, 0.0, 0.0, 1.0);
 
         gl.glEnable(GL2.GL_POLYGON_OFFSET_FILL);
+        // Сдвигаем глубину заливки, чтобы линии сетки не мерцали на той же поверхности.
         gl.glPolygonOffset(1.0f, 1.0f);
         drawTerrain(gl, true);
         gl.glDisable(GL2.GL_POLYGON_OFFSET_FILL);
@@ -130,6 +135,7 @@ public class T34 extends KeyAdapter implements GLEventListener {
         gl.glViewport(0, 0, width, height);
         gl.glMatrixMode(GL2.GL_PROJECTION);
         gl.glLoadIdentity();
+        // Угол обзора в градусах, дробное отношение ширины к высоте, ближняя и дальняя плоскости отсечения.
         glu.gluPerspective(43.0, (double) width / Math.max(1, height), 0.1, 20.0);
     }
 

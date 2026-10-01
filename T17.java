@@ -1,27 +1,14 @@
 // Задание 17. Круглая виньетка.
-import java.awt.BorderLayout;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.*;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
 import javax.imageio.ImageIO;
-import javax.swing.AbstractAction;
-import javax.swing.ActionMap;
-import javax.swing.InputMap;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
 public class T17 {
-    // За внутренним кругом плавно увеличиваем долю белого до внешнего радиуса.
+    // Суть задания: За внутренним кругом плавно увеличиваем долю белого до внешнего радиуса.
     public static BufferedImage process(BufferedImage source) {
         int width = source.getWidth();
         int height = source.getHeight();
@@ -32,14 +19,19 @@ public class T17 {
         BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
+                // getRGB возвращает 0xAARRGGBB: по 8 бит на прозрачность, красный, зелёный и синий.
                 int rgb = source.getRGB(x, y);
                 double distanceX = x - centerX;
                 double distanceY = y - centerY;
+                // Расстояние до центра по теореме Пифагора.
                 double distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
+                // Доля белого: 0 внутри малого круга, 1 за большим; между ними линейный переход.
                 double whiteWeight = Math.max(0.0, Math.min(1.0, (distance - innerRadius) / (radius - innerRadius)));
+                // Сдвиг на 16/8 бит выделяет R/G; &255 (0xFF) оставляет 8 бит канала, B берём без сдвига.
                 int red = (int) Math.round(((rgb >> 16) & 255) * (1.0 - whiteWeight) + 255 * whiteWeight);
                 int green = (int) Math.round(((rgb >> 8) & 255) * (1.0 - whiteWeight) + 255 * whiteWeight);
                 int blue = (int) Math.round((rgb & 255) * (1.0 - whiteWeight) + 255 * whiteWeight);
+                // <<16 ставит R, <<8 ставит G; побитовое | объединяет каналы в 0xRRGGBB.
                 result.setRGB(x, y, (red << 16) | (green << 8) | blue);
             }
         }
@@ -55,6 +47,7 @@ public class T17 {
             for (int x = 0; x < width; x++) {
                 int sourceRgb = source.getRGB(x, y);
                 int resultRgb = result.getRGB(x, y);
+                // Вес исходника 10-step, вес результата step; +5 перед /10 округляет до ближайшего целого.
                 int red = (((sourceRgb >> 16) & 255) * (10 - step)
                         + ((resultRgb >> 16) & 255) * step + 5) / 10;
                 int green = (((sourceRgb >> 8) & 255) * (10 - step)
@@ -99,8 +92,10 @@ public class T17 {
         @Override
         protected void paintComponent(Graphics graphics) {
             super.paintComponent(graphics);
+            // (double) или дробный литерал сохраняет дробь при делении; меньший масштаб вписывает картинку с сохранением пропорций.
             double scale = Math.min((double) getWidth() / displayed.getWidth(),
                     (double) getHeight() / displayed.getHeight());
+            // Math.round округляет размер до целого; минимум 1 не даёт получить нулевой размер.
             int width = Math.max(1, (int) Math.round(displayed.getWidth() * scale));
             int height = Math.max(1, (int) Math.round(displayed.getHeight() * scale));
             Graphics2D drawing = (Graphics2D) graphics.create();

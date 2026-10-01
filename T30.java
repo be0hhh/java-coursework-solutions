@@ -1,21 +1,15 @@
 // Задание 30. Круглый дом.
 import java.awt.BorderLayout;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 
-import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
-import com.jogamp.opengl.GL;
-import com.jogamp.opengl.GL2;
-import com.jogamp.opengl.GLAutoDrawable;
-import com.jogamp.opengl.GLCapabilities;
-import com.jogamp.opengl.GLEventListener;
-import com.jogamp.opengl.GLProfile;
+import com.jogamp.opengl.*;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.glu.GLU;
 
 public class T30 extends KeyAdapter implements GLEventListener {
+    // Суть задания: drawCylinder и drawCone строят части дома; display размещает стены и крышу.
     private final GLU glu = new GLU();
     private GLCanvas canvas;
     private double angleZ = 0.0;
@@ -27,6 +21,7 @@ public class T30 extends KeyAdapter implements GLEventListener {
         gl.glBegin(GL2.GL_TRIANGLE_FAN);
         gl.glVertex3d(0.0, 0.0, -0.5);
         for (int side = sides; side >= 0; side--) {
+            // 2*PI радиан — полный круг; side/sides задаёт долю оборота, sin/cos дают точку окружности.
             double angle = 2.0 * Math.PI * side / sides;
             gl.glVertex3d(radius * Math.cos(angle), radius * Math.sin(angle), -0.5);
         }
@@ -72,23 +67,30 @@ public class T30 extends KeyAdapter implements GLEventListener {
     public void init(GLAutoDrawable drawable) {
         GL2 gl = drawable.getGL().getGL2();
         gl.glEnable(GL.GL_DEPTH_TEST);
+        // Четыре значения — RGBA от 0 до 1; суффикс f означает float, последний 1.0f — непрозрачность.
         gl.glClearColor(0.07f, 0.09f, 0.13f, 1.0f);
     }
 
     // Каждый кадр: очищаем буферы, задаём камеру, применяем повороты и рисуем.
     public void display(GLAutoDrawable drawable) {
         GL2 gl = drawable.getGL().getGL2();
+        // Побитовое | объединяет флаги: очищаем и цвет кадра, и буфер глубины.
         gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
         gl.glMatrixMode(GL2.GL_MODELVIEW);
         gl.glLoadIdentity();
+        // Аргументы: положение камеры (3), точка взгляда (3), направление верха камеры (3).
         glu.gluLookAt(2.1, -3.4, 1.8, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
+        // Первый аргумент — угол в градусах; следующие три задают ось вращения.
         gl.glRotated(angleZ, 0.0, 0.0, 1.0);
 
+        // Сохраняем матрицу; вызовы ниже применяются к вершине в обратном порядке: масштаб, поворот, перенос (если заданы).
         gl.glPushMatrix();
         gl.glTranslated(0.0, 0.0, -0.225);
         gl.glScaled(1.1, 1.1, 0.75);
+        // В OpenGL цвет задаётся долями RGB от 0 до 1: 1 соответствует 255, 0 — отсутствию канала.
         gl.glColor3d(0.95, 0.28, 0.18);
         drawCylinder(gl);
+        // Восстанавливаем матрицу: преобразования этой детали не затронут следующую.
         gl.glPopMatrix();
 
         gl.glPushMatrix();
@@ -105,6 +107,7 @@ public class T30 extends KeyAdapter implements GLEventListener {
         gl.glViewport(0, 0, width, height);
         gl.glMatrixMode(GL2.GL_PROJECTION);
         gl.glLoadIdentity();
+        // Угол обзора в градусах, дробное отношение ширины к высоте, ближняя и дальняя плоскости отсечения.
         glu.gluPerspective(40.0, (double) width / Math.max(1, height), 0.1, 20.0);
     }
 

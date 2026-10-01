@@ -1,34 +1,24 @@
 // Задание 14. Автоматическая коррекция уровней.
-import java.awt.BorderLayout;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.*;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
 import javax.imageio.ImageIO;
-import javax.swing.AbstractAction;
-import javax.swing.ActionMap;
-import javax.swing.InputMap;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
 public class T14 {
-    // Отсекаем по 1% крайних значений каждого канала и растягиваем оставшийся диапазон.
+    // Суть задания: Отсекаем по 1% крайних значений каждого канала и растягиваем оставшийся диапазон.
     public static BufferedImage process(BufferedImage source) {
         int width = source.getWidth();
         int height = source.getHeight();
+        // Три гистограммы: красный, зелёный и синий; у каждой 256 уровней.
         int[][] histogram = new int[3][256];
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
+                // getRGB возвращает 0xAARRGGBB: по 8 бит на прозрачность, красный, зелёный и синий.
                 int rgb = source.getRGB(x, y);
+                // Сдвиг на 16/8 бит выделяет R/G; &255 (0xFF) оставляет 8 бит канала, B берём без сдвига.
                 histogram[0][(rgb >> 16) & 255]++;
                 histogram[1][(rgb >> 8) & 255]++;
                 histogram[2][rgb & 255]++;
@@ -36,6 +26,7 @@ public class T14 {
         }
         int[] low = new int[3];
         int[] high = new int[3];
+        // width * height — число пикселей; /100 задаёт 1% для отсечения с каждого края.
         int cutoff = width * height / 100;
         for (int channel = 0; channel < 3; channel++) {
             int count = 0;
@@ -61,11 +52,14 @@ public class T14 {
                 int rgb = source.getRGB(x, y);
                 int[] values = { (rgb >> 16) & 255, (rgb >> 8) & 255, rgb & 255 };
                 for (int channel = 0; channel < 3; channel++) {
+                    // При равных границах канал не растягиваем: иначе делили бы на ноль.
                     if (high[channel] > low[channel]) {
+                        // (значение - low) * 255 / (high - low) растягивает диапазон low..high в 0..255.
                         values[channel] = Math.max(0, Math.min(255,
                                 (values[channel] - low[channel]) * 255 / (high[channel] - low[channel])));
                     }
                 }
+                // <<16 ставит R, <<8 ставит G; побитовое | объединяет каналы в 0xRRGGBB.
                 result.setRGB(x, y, (values[0] << 16) | (values[1] << 8) | values[2]);
             }
         }
@@ -81,6 +75,7 @@ public class T14 {
             for (int x = 0; x < width; x++) {
                 int sourceRgb = source.getRGB(x, y);
                 int resultRgb = result.getRGB(x, y);
+                // Вес исходника 10-step, вес результата step; +5 перед /10 округляет до ближайшего целого.
                 int red = (((sourceRgb >> 16) & 255) * (10 - step)
                         + ((resultRgb >> 16) & 255) * step + 5) / 10;
                 int green = (((sourceRgb >> 8) & 255) * (10 - step)
@@ -125,8 +120,10 @@ public class T14 {
         @Override
         protected void paintComponent(Graphics graphics) {
             super.paintComponent(graphics);
+            // (double) или дробный литерал сохраняет дробь при делении; меньший масштаб вписывает картинку с сохранением пропорций.
             double scale = Math.min((double) getWidth() / displayed.getWidth(),
                     (double) getHeight() / displayed.getHeight());
+            // Math.round округляет размер до целого; минимум 1 не даёт получить нулевой размер.
             int width = Math.max(1, (int) Math.round(displayed.getWidth() * scale));
             int height = Math.max(1, (int) Math.round(displayed.getHeight() * scale));
             Graphics2D drawing = (Graphics2D) graphics.create();

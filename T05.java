@@ -1,35 +1,25 @@
 // Задание 5. Гистограмма зелёного канала.
-import java.awt.BorderLayout;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.*;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
 import javax.imageio.ImageIO;
-import javax.swing.AbstractAction;
-import javax.swing.ActionMap;
-import javax.swing.InputMap;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
 public class T05 {
-    // Считаем частоты значений зелёного канала и рисуем столбцы поверх исходника.
+    // Суть задания: Считаем частоты значений зелёного канала и рисуем столбцы поверх исходника.
     public static BufferedImage process(BufferedImage source) {
         int width = source.getWidth();
         int height = source.getHeight();
+        // 256 ячеек: по одной для каждого значения канала от 0 до 255.
         int[] histogram = new int[256];
         BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
+                // getRGB возвращает 0xAARRGGBB: по 8 бит на прозрачность, красный, зелёный и синий.
                 int rgb = source.getRGB(x, y);
+                // Сдвиг на 16/8 бит выделяет R/G; &255 (0xFF) оставляет 8 бит канала, B берём без сдвига.
                 histogram[(rgb >> 8) & 255]++;
                 result.setRGB(x, y, rgb);
             }
@@ -40,9 +30,10 @@ public class T05 {
         }
         int chartHeight = height / 2;
         for (int x = 0; x < Math.min(256, width); x++) {
+            // (long) расширяет число ДО умножения, чтобы произведение не переполнило int.
             int barHeight = (int) ((long) histogram[x] * chartHeight / maximum);
             for (int y = chartHeight - barHeight; y < chartHeight; y++) {
-                result.setRGB(x, y, 0x00ff00);
+                result.setRGB(x, y, 0x00ff00); // 0xRRGGBB — зелёный: R=0, G=255, B=0.
             }
         }
         return result;
@@ -57,11 +48,13 @@ public class T05 {
             for (int x = 0; x < width; x++) {
                 int sourceRgb = source.getRGB(x, y);
                 int resultRgb = result.getRGB(x, y);
+                // Вес исходника 10-step, вес результата step; +5 перед /10 округляет до ближайшего целого.
                 int red = (((sourceRgb >> 16) & 255) * (10 - step)
                         + ((resultRgb >> 16) & 255) * step + 5) / 10;
                 int green = (((sourceRgb >> 8) & 255) * (10 - step)
                         + ((resultRgb >> 8) & 255) * step + 5) / 10;
                 int blue = ((sourceRgb & 255) * (10 - step) + (resultRgb & 255) * step + 5) / 10;
+                // <<16 ставит R, <<8 ставит G; побитовое | объединяет каналы в 0xRRGGBB.
                 frame.setRGB(x, y, (red << 16) | (green << 8) | blue);
             }
         }
@@ -101,8 +94,10 @@ public class T05 {
         @Override
         protected void paintComponent(Graphics graphics) {
             super.paintComponent(graphics);
+            // (double) или дробный литерал сохраняет дробь при делении; меньший масштаб вписывает картинку с сохранением пропорций.
             double scale = Math.min((double) getWidth() / displayed.getWidth(),
                     (double) getHeight() / displayed.getHeight());
+            // Math.round округляет размер до целого; минимум 1 не даёт получить нулевой размер.
             int width = Math.max(1, (int) Math.round(displayed.getWidth() * scale));
             int height = Math.max(1, (int) Math.round(displayed.getHeight() * scale));
             Graphics2D drawing = (Graphics2D) graphics.create();

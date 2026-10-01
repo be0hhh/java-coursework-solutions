@@ -1,27 +1,14 @@
 // Задание 11. Рельеф изображения.
-import java.awt.BorderLayout;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.*;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
 import javax.imageio.ImageIO;
-import javax.swing.AbstractAction;
-import javax.swing.ActionMap;
-import javax.swing.InputMap;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
 public class T11 {
-    // Разность соседних пикселей выделяет границы; 128 задаёт нейтральный серый.
+    // Суть задания: Разность соседних пикселей выделяет границы; 128 задаёт нейтральный серый.
     public static BufferedImage process(BufferedImage source) {
         int width = source.getWidth();
         int height = source.getHeight();
@@ -29,13 +16,17 @@ public class T11 {
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 if (x == width - 1) {
-                    result.setRGB(x, y, 0x808080);
+                    result.setRGB(x, y, 0x808080); // 0xRRGGBB — серый: R=G=B=128.
                 } else {
+                    // getRGB возвращает 0xAARRGGBB: по 8 бит на прозрачность, красный, зелёный и синий.
                     int current = source.getRGB(x, y);
                     int next = source.getRGB(x + 1, y);
+                    // Разность соседей сдвигаем на 128, затем ограничиваем диапазоном 0..255.
+                    // Сдвиг на 16/8 бит выделяет R/G; &255 (0xFF) оставляет 8 бит канала, B берём без сдвига.
                     int red = Math.max(0, Math.min(255, 128 + ((current >> 16) & 255) - ((next >> 16) & 255)));
                     int green = Math.max(0, Math.min(255, 128 + ((current >> 8) & 255) - ((next >> 8) & 255)));
                     int blue = Math.max(0, Math.min(255, 128 + (current & 255) - (next & 255)));
+                    // <<16 ставит R, <<8 ставит G; побитовое | объединяет каналы в 0xRRGGBB.
                     result.setRGB(x, y, (red << 16) | (green << 8) | blue);
                 }
             }
@@ -52,6 +43,7 @@ public class T11 {
             for (int x = 0; x < width; x++) {
                 int sourceRgb = source.getRGB(x, y);
                 int resultRgb = result.getRGB(x, y);
+                // Вес исходника 10-step, вес результата step; +5 перед /10 округляет до ближайшего целого.
                 int red = (((sourceRgb >> 16) & 255) * (10 - step)
                         + ((resultRgb >> 16) & 255) * step + 5) / 10;
                 int green = (((sourceRgb >> 8) & 255) * (10 - step)
@@ -96,8 +88,10 @@ public class T11 {
         @Override
         protected void paintComponent(Graphics graphics) {
             super.paintComponent(graphics);
+            // (double) или дробный литерал сохраняет дробь при делении; меньший масштаб вписывает картинку с сохранением пропорций.
             double scale = Math.min((double) getWidth() / displayed.getWidth(),
                     (double) getHeight() / displayed.getHeight());
+            // Math.round округляет размер до целого; минимум 1 не даёт получить нулевой размер.
             int width = Math.max(1, (int) Math.round(displayed.getWidth() * scale));
             int height = Math.max(1, (int) Math.round(displayed.getHeight() * scale));
             Graphics2D drawing = (Graphics2D) graphics.create();

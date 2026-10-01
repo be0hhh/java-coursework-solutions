@@ -1,20 +1,12 @@
 // Задание 29. Операции с векторами и матрицами.
 import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.util.Locale;
 
-import javax.swing.AbstractAction;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
 public class T29 {
+    // Суть задания: Vector3 и Matrix3x3 содержат операции с векторами и матрицами; окно показывает примеры.
     public static final class Vector3 {
         public static final Vector3 X = new Vector3(1, 0, 0);
         public static final Vector3 Y = new Vector3(0, 1, 0);
@@ -38,6 +30,7 @@ public class T29 {
             if (length == 0) {
                 throw new IllegalArgumentException("A zero vector has no direction");
             }
+            // length имеет тип double: 1 / length — дробное деление; длина результата равна 1.
             return multiply(1 / length);
         }
 
@@ -53,10 +46,12 @@ public class T29 {
             return new Vector3(x - other.x, y - other.y, z - other.z);
         }
 
+        // Скалярное произведение равно |a|*|b|*cos угла; для перпендикулярных векторов оно нулевое.
         public double dot(Vector3 other) {
             return x * other.x + y * other.y + z * other.z;
         }
 
+        // Векторное произведение перпендикулярно обоим векторам; порядок задаёт направление.
         public Vector3 cross(Vector3 other) {
             return new Vector3(
                     y * other.z - z * other.y,
@@ -94,6 +89,7 @@ public class T29 {
         }
 
         public Vector3 multiply(Vector3 vector) {
+            // Каждая координата результата — скалярное произведение строки матрицы и вектора.
             return new Vector3(a.dot(vector), b.dot(vector), c.dot(vector));
         }
 
@@ -111,6 +107,7 @@ public class T29 {
         // Формула Родрига: I + sin(angle) * S + (1 - cos(angle)) * S²; угол в радианах.
         public static Matrix3x3 rotation(Vector3 axis, double angle) {
             Vector3 normalizedAxis = axis.normalize();
+            // Матрица S устроена так, что S*v равно векторному произведению оси на v.
             Matrix3x3 crossProductMatrix = new Matrix3x3(
                     new Vector3(0, -normalizedAxis.z, normalizedAxis.y),
                     new Vector3(normalizedAxis.z, 0, -normalizedAxis.x),
@@ -127,6 +124,7 @@ public class T29 {
         Vector3 first = new Vector3(1, 2, 3);
         Vector3 second = new Vector3(4, 5, 6);
         Matrix3x3 identity = Matrix3x3.identity();
+        // PI/2 радиан = 90 градусов; поворот вокруг Z переводит ось X в ось Y.
         Matrix3x3 rotation = Matrix3x3.rotation(Vector3.Z, Math.PI / 2);
         return new String[] {
             "Длина вектора (1, 2, 3) = " + format(first.length()),

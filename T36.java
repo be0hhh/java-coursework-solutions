@@ -1,30 +1,16 @@
 // Задание 36. Высота поверхности в выбранной точке.
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.*;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.StreamTokenizer;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 
-import javax.swing.AbstractAction;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JTextArea;
-import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
 public class T36 {
+    // Суть задания: getZ вычисляет высоту внутри треугольника по высотам трёх его вершин.
     private static int nextInt(StreamTokenizer tokens) throws IOException {
+        // Число токенизатора имеет тип double; (int) убирает дробную часть для размеров сетки.
         return (int) nextDouble(tokens);
     }
 
@@ -65,14 +51,17 @@ public class T36 {
                 || x < 0 || y < 0 || x > width - 1 || y > height - 1) {
             throw new IllegalArgumentException("Coordinates are outside the height map");
         }
+        // floor берёт целую часть вниз: это индекс ячейки, содержащей точку.
         int cellX = (int) Math.floor(x);
         int cellY = (int) Math.floor(y);
+        // На крайней границе берём предыдущую ячейку, чтобы индекс +1 не вышел за сетку.
         if (cellX == width - 1) {
             cellX--;
         }
         if (cellY == height - 1) {
             cellY--;
         }
+        // partX и partY — положение внутри ячейки от 0 до 1, а не координаты всей карты.
         double partX = x - cellX;
         double partY = y - cellY;
         double topLeftHeight = heights[cellX][cellY];
@@ -81,6 +70,7 @@ public class T36 {
         double bottomRightHeight = heights[cellX + 1][cellY + 1];
         // Чётность ячейки задаёт диагональ; веса вершин в каждом треугольнике дают сумму 1.
         if ((cellX + cellY) % 2 == 0) {
+            // Диагональ partY = partX разделяет ячейку; сравнение выбирает треугольник.
             if (partY >= partX) {
                 double topLeftPart = topLeftHeight * (1 - partY);
                 double bottomLeftPart = bottomLeftHeight * (partY - partX);
@@ -92,6 +82,7 @@ public class T36 {
             double bottomRightPart = bottomRightHeight * partY;
             return topLeftPart + topRightPart + bottomRightPart;
         }
+        // Для другой диагонали граница треугольников — partX + partY = 1.
         if (partY >= 1 - partX) {
             double bottomLeftPart = bottomLeftHeight * (1 - partX);
             double topRightPart = topRightHeight * (1 - partY);
@@ -123,8 +114,10 @@ public class T36 {
                     gray = 128;
                 } else {
                     double relativeHeight = heights[x][y] - minimum;
+                    // Высоты min..max переводим в серый 38..228, оставляя запас до чёрного и белого.
                     gray = (int) Math.round(38 + 190 * relativeHeight / (maximum - minimum));
                 }
+                // <<16 ставит R, <<8 ставит G; побитовое | объединяет каналы в 0xRRGGBB.
                 image.setRGB(x, y, (gray << 16) | (gray << 8) | gray);
             }
         }
@@ -161,6 +154,7 @@ public class T36 {
                     if (mouseX < 0 || mouseY < 0 || mouseX >= imageWidth || mouseY >= imageHeight) {
                         return;
                     }
+                    // Переводим пиксель клика в координату сетки; -1 сопоставляет крайние точки точно.
                     selectedX = mouseX * (heights.length - 1.0) / (imageWidth - 1.0);
                     selectedY = mouseY * (heights[0].length - 1.0) / (imageHeight - 1.0);
                     updateOutput();
@@ -214,6 +208,7 @@ public class T36 {
             super.paintComponent(graphics);
             Graphics2D drawing = (Graphics2D) graphics.create();
             int padding = 24;
+            // (double) или дробный литерал сохраняет дробь при делении; меньший масштаб вписывает картинку с сохранением пропорций.
             double scale = Math.min((getWidth() - 2.0 * padding) / image.getWidth(),
                     (getHeight() - 2.0 * padding) / image.getHeight());
             imageWidth = Math.max(1, (int) Math.round(image.getWidth() * scale));
@@ -222,6 +217,7 @@ public class T36 {
             imageTop = (getHeight() - imageHeight) / 2;
             drawing.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
             drawing.drawImage(image, imageLeft, imageTop, imageWidth, imageHeight, null);
+            // Обратное преобразование: координаты сетки переводим в пиксели для маркера.
             double markerOffsetX = selectedX * (imageWidth - 1.0) / Math.max(1, heights.length - 1);
             double markerOffsetY = selectedY * (imageHeight - 1.0) / Math.max(1, heights[0].length - 1);
             int markerX = imageLeft + (int) Math.round(markerOffsetX);

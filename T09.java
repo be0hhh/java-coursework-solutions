@@ -1,35 +1,23 @@
 // Задание 9. Диагональные зелёные полосы.
-import java.awt.BorderLayout;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.*;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
 import javax.imageio.ImageIO;
-import javax.swing.AbstractAction;
-import javax.swing.ActionMap;
-import javax.swing.InputMap;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
 public class T09 {
-    // Сумма x + y постоянна вдоль диагонали; чётность номера полосы задаёт цвет.
+    // Суть задания: Сумма x + y постоянна вдоль диагонали; чётность номера полосы задаёт цвет.
     public static BufferedImage process(BufferedImage source) {
         int width = source.getWidth();
         int stripeWidth = Math.max(1, width / 18);
         BufferedImage result = new BufferedImage(width, source.getHeight(), BufferedImage.TYPE_INT_RGB);
         for (int y = 0; y < source.getHeight(); y++) {
             for (int x = 0; x < width; x++) {
+                // Деление даёт номер диагональной полосы, остаток % 2 выбирает нечётные полосы.
                 if ((x + y) / stripeWidth % 2 == 1) {
-                    result.setRGB(x, y, 0x008000);
+                    result.setRGB(x, y, 0x008000); // 0xRRGGBB — тёмно-зелёный: R=0, G=128, B=0.
                 } else {
                     result.setRGB(x, y, source.getRGB(x, y));
                 }
@@ -47,11 +35,14 @@ public class T09 {
             for (int x = 0; x < width; x++) {
                 int sourceRgb = source.getRGB(x, y);
                 int resultRgb = result.getRGB(x, y);
+                // Сдвиг на 16/8 бит выделяет R/G; &255 (0xFF) оставляет 8 бит канала, B берём без сдвига.
+                // Вес исходника 10-step, вес результата step; +5 перед /10 округляет до ближайшего целого.
                 int red = (((sourceRgb >> 16) & 255) * (10 - step)
                         + ((resultRgb >> 16) & 255) * step + 5) / 10;
                 int green = (((sourceRgb >> 8) & 255) * (10 - step)
                         + ((resultRgb >> 8) & 255) * step + 5) / 10;
                 int blue = ((sourceRgb & 255) * (10 - step) + (resultRgb & 255) * step + 5) / 10;
+                // <<16 ставит R, <<8 ставит G; побитовое | объединяет каналы в 0xRRGGBB.
                 frame.setRGB(x, y, (red << 16) | (green << 8) | blue);
             }
         }
@@ -91,8 +82,10 @@ public class T09 {
         @Override
         protected void paintComponent(Graphics graphics) {
             super.paintComponent(graphics);
+            // (double) или дробный литерал сохраняет дробь при делении; меньший масштаб вписывает картинку с сохранением пропорций.
             double scale = Math.min((double) getWidth() / displayed.getWidth(),
                     (double) getHeight() / displayed.getHeight());
+            // Math.round округляет размер до целого; минимум 1 не даёт получить нулевой размер.
             int width = Math.max(1, (int) Math.round(displayed.getWidth() * scale));
             int height = Math.max(1, (int) Math.round(displayed.getHeight() * scale));
             Graphics2D drawing = (Graphics2D) graphics.create();

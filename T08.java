@@ -1,30 +1,18 @@
 // Задание 8. Салатовые полосы и оранжевый круг.
-import java.awt.BorderLayout;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.*;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
 import javax.imageio.ImageIO;
-import javax.swing.AbstractAction;
-import javax.swing.ActionMap;
-import javax.swing.InputMap;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
 public class T08 {
-    // Сначала рисуем полосы, затем круг: он перекрывает полосы внутри своей границы.
+    // Суть задания: Сначала рисуем полосы, затем круг: он перекрывает полосы внутри своей границы.
     public static BufferedImage process(BufferedImage source) {
         int width = source.getWidth();
         int height = source.getHeight();
+        // Полоса занимает примерно 1/36 ширины; Math.max не даёт её ширине стать нулевой.
         int stripeWidth = Math.max(1, width / 36);
         double centerX = width / 2.0;
         double centerY = height / 2.0;
@@ -32,14 +20,17 @@ public class T08 {
         BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
+                // getRGB возвращает 0xAARRGGBB: по 8 бит на прозрачность, красный, зелёный и синий.
                 int rgb = source.getRGB(x, y);
+                // Средняя половина по высоте; x / stripeWidth — номер полосы, % 2 чередует полосы.
                 if (y >= height / 4 && y < height * 3 / 4 && x / stripeWidth % 2 == 0) {
-                    rgb = 0x80ff00;
+                    rgb = 0x80ff00; // 0xRRGGBB — салатовый: R=128, G=255, B=0.
                 }
                 double distanceX = x - centerX;
                 double distanceY = y - centerY;
+                // Условие круга: dx² + dy² <= r²; извлекать квадратный корень не нужно.
                 if (distanceX * distanceX + distanceY * distanceY <= radius * radius) {
-                    rgb = 0xff8000;
+                    rgb = 0xff8000; // 0xRRGGBB — оранжевый: R=255, G=128, B=0.
                 }
                 result.setRGB(x, y, rgb);
             }
@@ -56,11 +47,14 @@ public class T08 {
             for (int x = 0; x < width; x++) {
                 int sourceRgb = source.getRGB(x, y);
                 int resultRgb = result.getRGB(x, y);
+                // Сдвиг на 16/8 бит выделяет R/G; &255 (0xFF) оставляет 8 бит канала, B берём без сдвига.
+                // Вес исходника 10-step, вес результата step; +5 перед /10 округляет до ближайшего целого.
                 int red = (((sourceRgb >> 16) & 255) * (10 - step)
                         + ((resultRgb >> 16) & 255) * step + 5) / 10;
                 int green = (((sourceRgb >> 8) & 255) * (10 - step)
                         + ((resultRgb >> 8) & 255) * step + 5) / 10;
                 int blue = ((sourceRgb & 255) * (10 - step) + (resultRgb & 255) * step + 5) / 10;
+                // <<16 ставит R, <<8 ставит G; побитовое | объединяет каналы в 0xRRGGBB.
                 frame.setRGB(x, y, (red << 16) | (green << 8) | blue);
             }
         }
@@ -100,8 +94,10 @@ public class T08 {
         @Override
         protected void paintComponent(Graphics graphics) {
             super.paintComponent(graphics);
+            // (double) или дробный литерал сохраняет дробь при делении; меньший масштаб вписывает картинку с сохранением пропорций.
             double scale = Math.min((double) getWidth() / displayed.getWidth(),
                     (double) getHeight() / displayed.getHeight());
+            // Math.round округляет размер до целого; минимум 1 не даёт получить нулевой размер.
             int width = Math.max(1, (int) Math.round(displayed.getWidth() * scale));
             int height = Math.max(1, (int) Math.round(displayed.getHeight() * scale));
             Graphics2D drawing = (Graphics2D) graphics.create();

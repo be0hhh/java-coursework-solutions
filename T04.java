@@ -1,40 +1,34 @@
 // Задание 4. Три цветных оттенка изображения.
-import java.awt.BorderLayout;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.*;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
 import javax.imageio.ImageIO;
-import javax.swing.AbstractAction;
-import javax.swing.ActionMap;
-import javax.swing.InputMap;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
 public class T04 {
-    // Вычисляем яркость и записываем её в разные каналы в каждой трети изображения.
+    // Суть задания: Вычисляем яркость и записываем её в разные каналы в каждой трети изображения.
     public static BufferedImage process(BufferedImage source) {
         int width = source.getWidth();
         BufferedImage result = new BufferedImage(width, source.getHeight(), BufferedImage.TYPE_INT_RGB);
         for (int y = 0; y < source.getHeight(); y++) {
             for (int x = 0; x < width; x++) {
+                // getRGB возвращает 0xAARRGGBB: по 8 бит на прозрачность, красный, зелёный и синий.
                 int rgb = source.getRGB(x, y);
+                // Яркость по заданным весам: 10% красного, 60% зелёного, 30% синего; (int) убирает дробь.
+                // Сдвиг на 16/8 бит выделяет R/G; &255 (0xFF) оставляет 8 бит канала, B берём без сдвига.
                 int value = (int) (0.1 * ((rgb >> 16) & 255) + 0.6 * ((rgb >> 8) & 255) + 0.3 * (rgb & 255));
+                // Целочисленное деление даёт номер трети: 0, 1 или 2.
                 int third = x * 3 / width;
                 if (third == 0) {
+                    // R = G = value, B = 0: жёлтый оттенок.
                     result.setRGB(x, y, (value << 16) | (value << 8));
                 } else if (third == 1) {
+                    // Яркость записываем только в красный канал.
                     result.setRGB(x, y, value << 16);
                 } else {
+                    // Яркость записываем только в зелёный канал.
                     result.setRGB(x, y, value << 8);
                 }
             }
@@ -51,6 +45,7 @@ public class T04 {
             for (int x = 0; x < width; x++) {
                 int sourceRgb = source.getRGB(x, y);
                 int resultRgb = result.getRGB(x, y);
+                // Вес исходника 10-step, вес результата step; +5 перед /10 округляет до ближайшего целого.
                 int red = (((sourceRgb >> 16) & 255) * (10 - step)
                         + ((resultRgb >> 16) & 255) * step + 5) / 10;
                 int green = (((sourceRgb >> 8) & 255) * (10 - step)
@@ -95,8 +90,10 @@ public class T04 {
         @Override
         protected void paintComponent(Graphics graphics) {
             super.paintComponent(graphics);
+            // (double) или дробный литерал сохраняет дробь при делении; меньший масштаб вписывает картинку с сохранением пропорций.
             double scale = Math.min((double) getWidth() / displayed.getWidth(),
                     (double) getHeight() / displayed.getHeight());
+            // Math.round округляет размер до целого; минимум 1 не даёт получить нулевой размер.
             int width = Math.max(1, (int) Math.round(displayed.getWidth() * scale));
             int height = Math.max(1, (int) Math.round(displayed.getHeight() * scale));
             Graphics2D drawing = (Graphics2D) graphics.create();

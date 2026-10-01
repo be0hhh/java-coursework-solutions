@@ -1,15 +1,11 @@
 // Задание 21. Восьмёрка из кривых Безье.
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Point;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
 public class T21 extends JPanel {
+    // Суть задания: render задаёт две замкнутые кривые Безье с общей центральной точкой.
     private static final long serialVersionUID = 1L;
     private final BufferedImage image;
 
@@ -44,8 +40,10 @@ public class T21 extends JPanel {
         int previousX = startPoint.x;
         int previousY = startPoint.y;
         for (int step = 0; step <= 1000; step++) {
+            // /1000.0 даёт дробный параметр 0..1; при /1000 получилось бы целочисленное деление.
             double time = step / 1000.0;
             double remainingTime = 1 - time;
+            // Веса Безье: (1-t)³, 3t(1-t)², 3t²(1-t), t³; (int) убирает дробную часть координаты.
             int x = (int) (remainingTime * remainingTime * remainingTime * startPoint.x
                     + 3 * time * remainingTime * remainingTime * firstControlPoint.x
                     + 3 * time * time * remainingTime * secondControlPoint.x
@@ -78,6 +76,7 @@ public class T21 extends JPanel {
             if (startX == endX && startY == endY) {
                 return;
             }
+            // Удвоенная ошибка определяет шаг по X и/или Y; дробные координаты не нужны.
             int twiceError = error * 2;
             if (twiceError > -deltaY) {
                 error -= deltaY;
@@ -93,9 +92,11 @@ public class T21 extends JPanel {
     @Override
     protected void paintComponent(Graphics graphics) {
         super.paintComponent(graphics);
+        // (double) или дробный литерал сохраняет дробь при делении; меньший масштаб вписывает картинку с сохранением пропорций.
         double scale = Math.min(1.0, Math.min(
                 (double) Math.max(1, getWidth() - 32) / image.getWidth(),
                 (double) Math.max(1, getHeight() - 32) / image.getHeight()));
+        // Math.round округляет размер до целого; минимум 1 не даёт получить нулевой размер.
         int width = Math.max(1, (int) Math.round(image.getWidth() * scale));
         int height = Math.max(1, (int) Math.round(image.getHeight() * scale));
         graphics.drawImage(image, (getWidth() - width) / 2, (getHeight() - height) / 2, width, height, null);

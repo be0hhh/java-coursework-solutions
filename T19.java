@@ -1,19 +1,14 @@
 // Задание 19. Заливка треугольников.
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Point;
+import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.Arrays;
 
 import javax.imageio.ImageIO;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
 public class T19 extends JPanel {
+    // Суть задания: fillTriangle заполняет строки между рёбрами; drawTeacherTriangles задаёт четыре треугольника.
     private static final long serialVersionUID = 1L;
     private final BufferedImage image;
 
@@ -25,6 +20,7 @@ public class T19 extends JPanel {
     public static void fillTriangle(BufferedImage image, Point firstPoint, Point secondPoint, Point thirdPoint, int color) {
         int[] left = new int[image.getHeight()];
         int[] right = new int[image.getHeight()];
+        // MAX_VALUE и MIN_VALUE — метки строк, в которых ещё не нашли точки рёбер.
         Arrays.fill(left, Integer.MAX_VALUE);
         Arrays.fill(right, Integer.MIN_VALUE);
         collectEdge(firstPoint.x, firstPoint.y, secondPoint.x, secondPoint.y, image.getHeight(), left, right);
@@ -54,9 +50,9 @@ public class T19 extends JPanel {
         Point t10 = new Point(width - 1, height * 3 / 4);
         Point t11 = new Point(width * 3 / 4, height / 2);
         Point t12 = new Point(width / 2, height - 1);
-        fillTriangle(image, t1, t2, t3, new Color(0, 200, 0).getRGB());
-        fillTriangle(image, t4, t5, t6, new Color(200, 0, 0).getRGB());
-        fillTriangle(image, t7, t8, t9, new Color(0, 0, 200).getRGB());
+        fillTriangle(image, t1, t2, t3, new Color(0, 200, 0).getRGB()); // зелёный: каналы RGB заданы в диапазоне 0..255.
+        fillTriangle(image, t4, t5, t6, new Color(200, 0, 0).getRGB()); // красный: каналы RGB заданы в диапазоне 0..255.
+        fillTriangle(image, t7, t8, t9, new Color(0, 0, 200).getRGB()); // синий: каналы RGB заданы в диапазоне 0..255.
         fillTriangle(image, t10, t11, t12, Color.BLACK.getRGB());
     }
 
@@ -70,6 +66,7 @@ public class T19 extends JPanel {
     private static void collectEdge(int startX, int startY, int endX, int endY, int height, int[] left, int[] right) {
         int deltaX = Math.abs(endX - startX);
         int deltaY = Math.abs(endY - startY);
+        // Ведём обход по той оси, вдоль которой отрезок длиннее.
         if (deltaX >= deltaY) {
             if (startX > endX) {
                 int temporary = startX;
@@ -85,6 +82,7 @@ public class T19 extends JPanel {
             for (int x = startX; x <= endX; x++) {
                 collect(x, y, height, left, right);
                 error += deltaY;
+                // Удвоенная ошибка достигла порога: делаем дополнительный шаг по Y.
                 if (error + error >= deltaX) {
                     y += directionY;
                     error -= deltaX;
@@ -105,6 +103,7 @@ public class T19 extends JPanel {
             for (int y = startY; y <= endY; y++) {
                 collect(x, y, height, left, right);
                 error += deltaX;
+                // Удвоенная ошибка достигла порога: делаем дополнительный шаг по X.
                 if (error + error >= deltaY) {
                     x += directionX;
                     error -= deltaY;
@@ -133,9 +132,11 @@ public class T19 extends JPanel {
     @Override
     protected void paintComponent(Graphics graphics) {
         super.paintComponent(graphics);
+        // (double) или дробный литерал сохраняет дробь при делении; меньший масштаб вписывает картинку с сохранением пропорций.
         double scale = Math.min(1.0, Math.min(
                 (double) Math.max(1, getWidth() - 32) / image.getWidth(),
                 (double) Math.max(1, getHeight() - 32) / image.getHeight()));
+        // Math.round округляет размер до целого; минимум 1 не даёт получить нулевой размер.
         int width = Math.max(1, (int) Math.round(image.getWidth() * scale));
         int height = Math.max(1, (int) Math.round(image.getHeight() * scale));
         graphics.drawImage(image, (getWidth() - width) / 2, (getHeight() - height) / 2, width, height, null);
